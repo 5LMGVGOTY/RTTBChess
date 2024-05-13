@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="keywords" content="Chess, variant, real-time">
+        <meta name="description" content="Real-Time Turn-Based Chess, where you and your opponent move at the same time so it doesn't matter anymore who has which colour! ">
+        <meta name="author" content="G. Vega--Grodwohl">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>RTTBChess</title>
+        <link rel="stylesheet" href="style.css">
+        <script src="code.js"></script>
+    </head>
+    <body onload="test()" onmouseup="">
+        <header><h1>Real-Time Turn-Based Chess</h1></header>
+        <noscript>JavaScript disabled :skull:</noscript>
+        <div id="board">
+            <img src="Images/Black_rook.png" alt="Black rook" style="left: 0; top: 0;">
+            <img src="Images/Black_knight.png" alt="Black knight" style="left: 45px; top: 0;">
+            <img src="Images/Black_bishop.png" alt="Black bishop" style="left: 90px; top: 0;">
+            <img src="Images/Black_queen.png" alt="Black queen" style="left: 135px; top: 0;">
+            <img src="Images/Black_king.png" alt="Black king" style="left: 180px; top: 0;">
+            <img src="Images/Black_bishop.png" alt="Black bishop" style="left: 225px; top: 0;">
+            <img src="Images/Black_knight.png" alt="Black knight" style="left: 270px; top: 0;">
+            <img src="Images/Black_rook.png" alt="Black rook" style="left: 315px; top: 0;">
+            <img src="Images/Black_pawn.png" alt="Black pawn" style="left: 0; top: 45px;">
+            <img src="Images/Black_pawn.png" alt="Black pawn" style="left: 45px; top: 45px;">
+            <img src="Images/Black_pawn.png" alt="Black pawn" style="left: 90px; top: 45px;">
+            <img src="Images/Black_pawn.png" alt="Black pawn" style="left: 135px; top: 45px;">
+            <img src="Images/Black_pawn.png" alt="Black pawn" style="left: 180px; top: 45px;">
+            <img src="Images/Black_pawn.png" alt="Black pawn" style="left: 225px; top: 45px;">
+            <img src="Images/Black_pawn.png" alt="Black pawn" style="left: 270px; top: 45px;">
+            <img src="Images/Black_pawn.png" alt="Black pawn" style="left: 315px; top: 45px;">
+            <img src="Images/White_pawn.png" alt="White pawn" style="left: 0; top: 270px;">
+            <img src="Images/White_pawn.png" alt="White pawn" style="left: 45px; top: 270px;">
+            <img src="Images/White_pawn.png" alt="White pawn" style="left: 90px; top: 270px;">
+            <img src="Images/White_pawn.png" alt="White pawn" style="left: 135px; top: 270px;">
+            <img src="Images/White_pawn.png" alt="White pawn" style="left: 180px; top: 270px;">
+            <img src="Images/White_pawn.png" alt="White pawn" style="left: 225px; top: 270px;">
+            <img src="Images/White_pawn.png" alt="White pawn" style="left: 270px; top: 270px;">
+            <img src="Images/White_pawn.png" alt="White pawn" style="left: 315px; top: 270px;">
+            <img src="Images/White_rook.png" alt="White rook" style="left: 0; top: 315px;">
+            <img src="Images/White_knight.png" alt="White knight" style="left: 45px; top: 315px;">
+            <img src="Images/White_bishop.png" alt="White bishop" style="left: 90px; top: 315px;">
+            <img src="Images/White_queen.png" alt="White queen" style="left: 135px; top: 315px;">
+            <img src="Images/White_king.png" alt="White king" style="left: 180px; top: 315px;">
+            <img src="Images/White_bishop.png" alt="White bishop" style="left: 225px; top: 315px;">
+            <img src="Images/White_knight.png" alt="White knight" style="left: 270px; top: 315px;">
+            <img src="Images/White_rook.png" alt="White rook" style="left: 315px; top: 315px;">
+            <p class="r8 rows">8</p>    
+            <div class="cell light r8 ca " onclick="click(this)"></div>
+            <div class="cell dark r8 cb " onclick="click(this)"></div>
+            <div class="cell light r8 cc " onclick="click(this)"></div>
+            <div class="cell dark r8 cd " onclick="click(this)"></div>
+            <div class="cell light r8 ce " onclick="click(this)"></div>
+            <div class="cell dark r8 cf " onclick="click(this)"></div>
+            <div class="cell light r8 cg " onclick="click(this)"></div>
+            <div class="cell dark r8 ch " onclick="click(this)"></div>
+            <p class="r7 rows">7</p>
+            <div class="cell dark r7 ca " onclick="click(this)"></div>
+            <div class="cell light r7 cb " onclick="click(this)"></div>
+            <div class="cell dark r7 cc " onclick="click(this)"></div>
+            <div class="cell light r7 cd " onclick="click(this)"></div>
+            <div class="cell dark r7 ce " onclick="click(this)"></div>
+            <div class="cell light r7 cf " onclick="click(this)"></div>
+            <div class="cell dark r7 cg " onclick="click(this)"></div>
+            <div class="cell light r7 ch " onclick="click(this)"></div>
+            <p class="r6 rows">6</p>    
+            <div class="cell light r6 ca " onclick="click(this)"></div>
+            <div class="cell dark r6 cb " onclick="click(this)"></div>
+            <div class="cell light r6 cc " onclick="click(this)"></div>
+            <div class="cell dark r6 cd " onclick="click(this)"></div>
+            <div class="cell light r6 ce " onclick="click(this)"></div>
+            <div class="cell dark r6 cf " onclick="click(this)"></div>
+            <div class="cell light r6 cg " onclick="click(this)"></div>
+            <div class="cell dark r6 ch " onclick="click(this)"></div>
+            <p class="r5 rows">5</p>
+            <div class="cell dark r5 ca " onclick="click(this)"></div>
+            <div class="cell light r5 cb " onclick="click(this)"></div>
+            <div class="cell dark r5 cc " onclick="click(this)"></div>
+            <div class="cell light r5 cd " onclick="click(this)"></div>
+            <div class="cell dark r5 ce " onclick="click(this)"></div>
+            <div class="cell light r5 cf " onclick="click(this)"></div>
+            <div class="cell dark r5 cg " onclick="click(this)"></div>
+            <div class="cell light r5 ch " onclick="click(this)"></div>
+            <p class="r4 rows">4</p>    
+            <div class="cell light r4 ca " onclick="click(this)"></div>
+            <div class="cell dark r4 cb " onclick="click(this)"></div>
+            <div class="cell light r4 cc " onclick="click(this)"></div>
+            <div class="cell dark r4 cd " onclick="click(this)"></div>
+            <div class="cell light r4 ce " onclick="click(this)"></div>
+            <div class="cell dark r4 cf " onclick="click(this)"></div>
+            <div class="cell light r4 cg " onclick="click(this)"></div>
+            <div class="cell dark r4 ch " onclick="click(this)"></div>
+            <p class="r3 rows">3</p>
+            <div class="cell dark r3 ca " onclick="click(this)"></div>
+            <div class="cell light r3 cb " onclick="click(this)"></div>
+            <div class="cell dark r3 cc " onclick="click(this)"></div>
+            <div class="cell light r3 cd " onclick="click(this)"></div>
+            <div class="cell dark r3 ce " onclick="click(this)"></div>
+            <div class="cell light r3 cf " onclick="click(this)"></div>
+            <div class="cell dark r3 cg " onclick="click(this)"></div>
+            <div class="cell light r3 ch " onclick="click(this)"></div>
+            <p class="r2 rows">2</p>    
+            <div class="cell light r2 ca " onclick="click(this)"></div>
+            <div class="cell dark r2 cb " onclick="click(this)"></div>
+            <div class="cell light r2 cc " onclick="click(this)"></div>
+            <div class="cell dark r2 cd " onclick="click(this)"></div>
+            <div class="cell light r2 ce " onclick="click(this)"></div>
+            <div class="cell dark r2 cf " onclick="click(this)"></div>
+            <div class="cell light r2 cg " onclick="click(this)"></div>
+            <div class="cell dark r2 ch " onclick="click(this)"></div>
+            <p class="r1 rows">1</p>
+            <div class="cell dark r1 ca " onclick="click(this)"></div>
+            <div class="cell light r1 cb " onclick="click(this)"></div>
+            <div class="cell dark r1 cc " onclick="click(this)"></div>
+            <div class="cell light r1 cd " onclick="click(this)"></div>
+            <div class="cell dark r1 ce " onclick="click(this)"></div>
+            <div class="cell light r1 cf " onclick="click(this)"></div>
+            <div class="cell dark r1 cg " onclick="click(this)"></div>
+            <div class="cell light r1 ch " onclick="click(this)"></div>
+            <p class="cols ca">a</p>
+            <p class="cols cb">b</p>
+            <p class="cols cc">c</p>
+            <p class="cols cd">d</p>
+            <p class="cols ce">e</p>
+            <p class="cols cf">f</p>
+            <p class="cols cg">g</p>
+            <p class="cols ch">h</p>
+        </div>
+    </body>
+</html>
