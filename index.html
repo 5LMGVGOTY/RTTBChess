@@ -8,9 +8,9 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>RTTBChess</title>
         <link rel="stylesheet" href="style.css">
-        <script src="code.js"></script>
+        <script type="application/javascript" src="code.js"></script>
     </head>
-    <body onload="test()">
+    <body onload="testConnection()">
         <header><h1>Real-Time Turn-Based Chess</h1></header>
         <noscript>JavaScript disabled :skull:</noscript>
         <div id="board">
@@ -47,77 +47,77 @@
             <img src="Images/White_knight.png" alt="&#9816;" style="left: 270px; top: 315px;">
             <img src="Images/White_rook.png" alt="&#9814;" style="left: 315px; top: 315px;">
             <p class="r8 rows">8</p>    
-            <div class="cell light r8 ca " onclick="click(this)"></div>
-            <div class="cell dark r8 cb " onclick="click(this)"></div>
-            <div class="cell light r8 cc " onclick="click(this)"></div>
-            <div class="cell dark r8 cd " onclick="click(this)"></div>
-            <div class="cell light r8 ce " onclick="click(this)"></div>
-            <div class="cell dark r8 cf " onclick="click(this)"></div>
-            <div class="cell light r8 cg " onclick="click(this)"></div>
-            <div class="cell dark r8 ch " onclick="click(this)"></div>
+            <div class="cell light r8 ca"></div>
+            <div class="cell dark r8 cb"></div>
+            <div class="cell light r8 cc"></div>
+            <div class="cell dark r8 cd"></div>
+            <div class="cell light r8 ce"></div>
+            <div class="cell dark r8 cf"></div>
+            <div class="cell light r8 cg"></div>
+            <div class="cell dark r8 ch"></div>
             <p class="r7 rows">7</p>
-            <div class="cell dark r7 ca " onclick="click(this)"></div>
-            <div class="cell light r7 cb " onclick="click(this)"></div>
-            <div class="cell dark r7 cc " onclick="click(this)"></div>
-            <div class="cell light r7 cd " onclick="click(this)"></div>
-            <div class="cell dark r7 ce " onclick="click(this)"></div>
-            <div class="cell light r7 cf " onclick="click(this)"></div>
-            <div class="cell dark r7 cg " onclick="click(this)"></div>
-            <div class="cell light r7 ch " onclick="click(this)"></div>
+            <div class="cell dark r7 ca"></div>
+            <div class="cell light r7 cb"></div>
+            <div class="cell dark r7 cc"></div>
+            <div class="cell light r7 cd"></div>
+            <div class="cell dark r7 ce"></div>
+            <div class="cell light r7 cf"></div>
+            <div class="cell dark r7 cg"></div>
+            <div class="cell light r7 ch"></div>
             <p class="r6 rows">6</p>    
-            <div class="cell light r6 ca " onclick="click(this)"></div>
-            <div class="cell dark r6 cb " onclick="click(this)"></div>
-            <div class="cell light r6 cc " onclick="click(this)"></div>
-            <div class="cell dark r6 cd " onclick="click(this)"></div>
-            <div class="cell light r6 ce " onclick="click(this)"></div>
-            <div class="cell dark r6 cf " onclick="click(this)"></div>
-            <div class="cell light r6 cg " onclick="click(this)"></div>
-            <div class="cell dark r6 ch " onclick="click(this)"></div>
+            <div class="cell light r6 ca"></div>
+            <div class="cell dark r6 cb"></div>
+            <div class="cell light r6 cc"></div>
+            <div class="cell dark r6 cd"></div>
+            <div class="cell light r6 ce"></div>
+            <div class="cell dark r6 cf"></div>
+            <div class="cell light r6 cg"></div>
+            <div class="cell dark r6 ch"></div>
             <p class="r5 rows">5</p>
-            <div class="cell dark r5 ca " onclick="click(this)"></div>
-            <div class="cell light r5 cb " onclick="click(this)"></div>
-            <div class="cell dark r5 cc " onclick="click(this)"></div>
-            <div class="cell light r5 cd " onclick="click(this)"></div>
-            <div class="cell dark r5 ce " onclick="click(this)"></div>
-            <div class="cell light r5 cf " onclick="click(this)"></div>
-            <div class="cell dark r5 cg " onclick="click(this)"></div>
-            <div class="cell light r5 ch " onclick="click(this)"></div>
+            <div class="cell dark r5 ca"></div>
+            <div class="cell light r5 cb"></div>
+            <div class="cell dark r5 cc"></div>
+            <div class="cell light r5 cd"></div>
+            <div class="cell dark r5 ce"></div>
+            <div class="cell light r5 cf"></div>
+            <div class="cell dark r5 cg"></div>
+            <div class="cell light r5 ch"></div>
             <p class="r4 rows">4</p>    
-            <div class="cell light r4 ca " onclick="click(this)"></div>
-            <div class="cell dark r4 cb " onclick="click(this)"></div>
-            <div class="cell light r4 cc " onclick="click(this)"></div>
-            <div class="cell dark r4 cd " onclick="click(this)"></div>
-            <div class="cell light r4 ce " onclick="click(this)"></div>
-            <div class="cell dark r4 cf " onclick="click(this)"></div>
-            <div class="cell light r4 cg " onclick="click(this)"></div>
-            <div class="cell dark r4 ch " onclick="click(this)"></div>
+            <div class="cell light r4 ca"></div>
+            <div class="cell dark r4 cb"></div>
+            <div class="cell light r4 cc"></div>
+            <div class="cell dark r4 cd"></div>
+            <div class="cell light r4 ce"></div>
+            <div class="cell dark r4 cf"></div>
+            <div class="cell light r4 cg"></div>
+            <div class="cell dark r4 ch"></div>
             <p class="r3 rows">3</p>
-            <div class="cell dark r3 ca " onclick="click(this)"></div>
-            <div class="cell light r3 cb " onclick="click(this)"></div>
-            <div class="cell dark r3 cc " onclick="click(this)"></div>
-            <div class="cell light r3 cd " onclick="click(this)"></div>
-            <div class="cell dark r3 ce " onclick="click(this)"></div>
-            <div class="cell light r3 cf " onclick="click(this)"></div>
-            <div class="cell dark r3 cg " onclick="click(this)"></div>
-            <div class="cell light r3 ch " onclick="click(this)"></div>
+            <div class="cell dark r3 ca"></div>
+            <div class="cell light r3 cb"></div>
+            <div class="cell dark r3 cc"></div>
+            <div class="cell light r3 cd"></div>
+            <div class="cell dark r3 ce"></div>
+            <div class="cell light r3 cf"></div>
+            <div class="cell dark r3 cg"></div>
+            <div class="cell light r3 ch"></div>
             <p class="r2 rows">2</p>    
-            <div class="cell light r2 ca " onclick="click(this)"></div>
-            <div class="cell dark r2 cb " onclick="click(this)"></div>
-            <div class="cell light r2 cc " onclick="click(this)"></div>
-            <div class="cell dark r2 cd " onclick="click(this)"></div>
-            <div class="cell light r2 ce " onclick="click(this)"></div>
-            <div class="cell dark r2 cf " onclick="click(this)"></div>
-            <div class="cell light r2 cg " onclick="click(this)"></div>
-            <div class="cell dark r2 ch " onclick="click(this)"></div>
+            <div class="cell light r2 ca"></div>
+            <div class="cell dark r2 cb"></div>
+            <div class="cell light r2 cc"></div>
+            <div class="cell dark r2 cd"></div>
+            <div class="cell light r2 ce"></div>
+            <div class="cell dark r2 cf"></div>
+            <div class="cell light r2 cg"></div>
+            <div class="cell dark r2 ch"></div>
             <p class="r1 rows">1</p>
-            <div class="cell dark r1 ca " onclick="click(this)"></div>
-            <div class="cell light r1 cb " onclick="click(this)"></div>
-            <div class="cell dark r1 cc " onclick="click(this)"></div>
-            <div class="cell light r1 cd " onclick="click(this)"></div>
-            <div class="cell dark r1 ce " onclick="click(this)"></div>
-            <div class="cell light r1 cf " onclick="click(this)"></div>
-            <div class="cell dark r1 cg " onclick="click(this)"></div>
-            <div class="cell light r1 ch " onclick="click(this)"></div>
+            <div class="cell dark r1 ca"></div>
+            <div class="cell light r1 cb"></div>
+            <div class="cell dark r1 cc"></div>
+            <div class="cell light r1 cd"></div>
+            <div class="cell dark r1 ce"></div>
+            <div class="cell light r1 cf"></div>
+            <div class="cell dark r1 cg"></div>
+            <div class="cell light r1 ch"></div>
             <p class="cols ca">a</p>
             <p class="cols cb">b</p>
             <p class="cols cc">c</p>

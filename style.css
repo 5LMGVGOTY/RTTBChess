@@ -11,7 +11,6 @@ h1 { text-align: center; }
     grid-template-rows: 45px 45px 45px 45px 45px 45px 45px 45px 20px;
 }
 .cell {
-    size: 45px;
     position: relative;
     overflow: hidden;
 }
@@ -39,4 +38,5 @@ h1 { text-align: center; }
 img {
     position: absolute;
     z-index: 1;
+    pointer-events: none;
 }
