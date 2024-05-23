@@ -26,14 +26,14 @@ h1 { text-align: center; }
     grid-row: 9;
     text-align: center;
 }
-.ca { grid-column: 1; }
-.cb { grid-column: 2; }
-.cc { grid-column: 3; }
-.cd { grid-column: 4; }
-.ce { grid-column: 5; }
-.cf { grid-column: 6; }
-.cg { grid-column: 7; }
-.ch { grid-column: 8; }
+.c1 { grid-column: 1; }
+.c2 { grid-column: 2; }
+.c3 { grid-column: 3; }
+.c4 { grid-column: 4; }
+.c5 { grid-column: 5; }
+.c6 { grid-column: 6; }
+.c7 { grid-column: 7; }
+.c8 { grid-column: 8; }
 .rows { grid-column: 9; }
 img {
     position: absolute;
