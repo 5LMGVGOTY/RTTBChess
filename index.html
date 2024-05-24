@@ -8,7 +8,9 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>RTTBChess</title>
         <link rel="stylesheet" href="style.css">
-        <script type="application/javascript" src="code.js"></script>
+        <script type="application/javascript" src="code.js"></script><meta http-equiv='cache-control' content='no-cache'> 
+        <meta http-equiv='expires' content='0'> 
+        <meta http-equiv='pragma' content='no-cache'>
     </head>
     <body onload="testConnection()">
         <header><h1>Real-Time Turn-Based Chess</h1></header>
@@ -127,5 +129,14 @@
             <p class="cols c7">g</p>
             <p class="cols c8">h</p>
         </div>
+        <h2>Rules</h2>
+        <ul>
+            <li>Kings may not move into chess. </li>
+            <li>Movement rules of standart chess apply. </li>
+            <li>Players move at the same time. If your move would be illegal after your opponent's move, it is not played. </li>
+            <li>Should two pieces land on the same empty square, they both are removed except for kings. </li>
+            <li>Should two pieces land on the same occupied space, the piece of the colour of the occupant lands and stays there alone. Both other pieces are removed. </li>
+            <li>A move capturing a piece in one's home ranks (1 and 2 for White, 7 and 8 for Black) has priority, as to prevent rampages</li>
+        </ul>
     </body>
 </html>

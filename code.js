@@ -148,7 +148,7 @@ function movementOptions(piece, row, column) {
             let operation=piece==6?1:-1;
             if (interaction(piece, row+operation, column)==EMPTY) {
                 cellsToMoveTo.push([row+operation, column]);
-                if (row==piece==6?1:6&&interaction(piece, operation*2+row, column)==EMPTY) cellsToMoveTo.push([row+operation*2, column]);
+                if (row==(piece==6?1:6)&&interaction(piece, operation*2+row, column)==EMPTY) cellsToMoveTo.push([row+operation*2, column]);
             }
             if (column<7&&interaction(piece, row+operation, column+1)==CAPTURE) cellsToMoveTo.push([row+operation, column+1]);
             if (column>0&&interaction(piece, row+operation, column-1)==CAPTURE) cellsToMoveTo.push([row+operation, column-1]);
