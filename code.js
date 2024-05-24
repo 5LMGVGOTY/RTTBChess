@@ -51,50 +51,42 @@ function movementOptions(piece, row, column) {
     let cellsToMoveTo=[];
     switch(piece) {
         case 1: case 7://Kings
-            if (column<7&&row>0&&board[row-1][column+1]==0) cellsToMoveTo.push([row-1, column+1]);
-            if (column<7&&board[row][column+1]==0) cellsToMoveTo.push([row, column+1]);
-            if (column<7&&row<7&&board[row+1][column+1]==0) cellsToMoveTo.push([row+1, column+1]);
-            if (row<7&&board[row+1][column]==0) cellsToMoveTo.push([row+1, column]);
-            if (column>0&&row<7&&board[row+1][column-1]==0) cellsToMoveTo.push([row+1, column-1]);
-            if (column>0&&board[row][column-1]==0) cellsToMoveTo.push([row, column-1]);
-            if (column>0&&row>0&&board[row-1][column-1]==0) cellsToMoveTo.push([row-1, column-1]);
-            if (row>0&&board[row-1][column]==0) cellsToMoveTo.push([row-1, column]);
+            if (column<7&&row>0) cellsToMoveTo.push([row-1, column+1]);
+            if (column<7) cellsToMoveTo.push([row, column+1]);
+            if (column<7&&row<7) cellsToMoveTo.push([row+1, column+1]);
+            if (row<7) cellsToMoveTo.push([row+1, column]);
+            if (column>0&&row<7) cellsToMoveTo.push([row+1, column-1]);
+            if (column>0) cellsToMoveTo.push([row, column-1]);
+            if (column>0&&row>0) cellsToMoveTo.push([row-1, column-1]);
+            if (row>0) cellsToMoveTo.push([row-1, column]);
             break;
         case 2: case 8://Queens
             cellsToMoveTo=cellsToMoveTo.concat(movementOptions(piece+1, row, column), movementOptions(piece+3, row, column));
             break;
         case 3: case 9://Rooks
             for (let c=row+1; c<8; c++) {
-                let target=interaction(piece, c, column);
-                if (target==EMPTY) cellsToMoveTo.push([c, column]);
-                else if (target==CAPTURE) {
+                if (interaction(piece, c, column)==BLOCKED) {
                     cellsToMoveTo.push([c, column]);
                     break;
-                } else break;
+                } else cellsToMoveTo.push([c, column]);
             }
-            for (let c=row-1; c>=0; c--) {
-                let target=interaction(piece, c, column);
-                if (target==EMPTY) cellsToMoveTo.push([c, column]);
-                else if (target==CAPTURE) {
+            for (let c=row-1; c>=0; c++) {
+                if (interaction(piece, c, column)==BLOCKED) {
                     cellsToMoveTo.push([c, column]);
                     break;
-                } else break;
+                } else cellsToMoveTo.push([c, column]);
             }
             for (let c=column+1; c<8; c++) {
-                let target=interaction(piece, row, c);
-                if (target==EMPTY) cellsToMoveTo.push([row, c]);
-                else if (target==CAPTURE) {
-                    cellsToMoveTo.push([row, c]);
+                if (interaction(piece, row, c)==BLOCKED) {
+                    cellsToMoveTo.push([column, c]);
                     break;
-                } else break;
+                } else cellsToMoveTo.push([row, c]);
             }
             for (let c=column-1; c>=0; c++) {
-                let target=interaction(piece, row, c);
-                if (target==EMPTY) cellsToMoveTo.push([row, c]);
-                else if (target==CAPTURE) {
+                if (interaction(piece, row, c)==BLOCKED) {
                     cellsToMoveTo.push([row, c]);
                     break;
-                } else break;
+                } else cellsToMoveTo.push([row, c]);
             }
             break;
         case 4: case 10://Knights
@@ -102,14 +94,10 @@ function movementOptions(piece, row, column) {
                              [row-1, column-2], [row-2, column-1], [row+1, column-2], [row+2, column-1]];
             for (let moveOption of moveOptions) {
                 if (moveOption[0]<0||moveOption[0]>7||moveOption[1]<0||moveOption[1]>7) continue;
-                else {
-                    let target=interaction(piece, moveOption[0], moveOption[1]);
-                    if (target==EMPTY||target==CAPTURE) cellsToMoveTo.push([moveOption[0], moveOption[1]]);
-                    else continue;
-                }
+                else cellsToMoveTo.push([moveOption[0], moveOption[1]]);
             }
             break;
-        case 5: case 11://Bishops
+        case 5: case 11://Bishops need fixin
             let upRight=row>column?row:column, downLeft=row>column?column:row, upLeft=row>7-column?row:column, downRight=7-row>column?row:column;
             for (let c=0; c<7-upRight; c++) {
                 let target=interaction(piece, row+c, column+c);
@@ -146,12 +134,12 @@ function movementOptions(piece, row, column) {
             break;
         case 6: case 12://Pawns
             let operation=piece==6?1:-1;
-            if (interaction(piece, row+operation, column)==EMPTY) {
+            if (interaction(piece, row+operation, column)!=BLOCKED) {
                 cellsToMoveTo.push([row+operation, column]);
-                if (row==(piece==6?1:6)&&interaction(piece, operation*2+row, column)==EMPTY) cellsToMoveTo.push([row+operation*2, column]);
+                if (row==(piece==6?1:6)&&interaction(piece, operation*2+row, column)!=BLOCKED) cellsToMoveTo.push([row+operation*2, column]);
             }
-            if (column<7&&interaction(piece, row+operation, column+1)==CAPTURE) cellsToMoveTo.push([row+operation, column+1]);
-            if (column>0&&interaction(piece, row+operation, column-1)==CAPTURE) cellsToMoveTo.push([row+operation, column-1]);
+            if (column<7) cellsToMoveTo.push([row+operation, column+1]);
+            if (column>0) cellsToMoveTo.push([row+operation, column-1]);
             break;
         case 0:default:break;
     }
