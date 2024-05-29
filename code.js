@@ -31,10 +31,14 @@ const IMAGES=new Map([
     ['P', "White_pawn"], 
     ['p', "Black_pawn"]
 ]);
-const EMPTY=0, CAPTURE=1, BLOCKED=2;
+const EMPTY=0, CAPTURE=1, BLOCKED=2, WHITE=1, BLACK=2;
+var whatToShow=EMPTY;
+const WHITE_BUTTON=document.getElementsByTagName("button")[0], BLACK_BUTTON=document.getElementsByTagName("button")[1];
 function init() {
     console.log("Yay, HTML connects to this external JS file! ");
     for (let cell of document.getElementsByClassName("cell")) cell.addEventListener('click', () => selectCell(cell));
+    WHITE_BUTTON.addEventListener('click', () => inputMove(true));
+    BLACK_BUTTON.addEventListener('click', () => inputMove(false));
     for (let c=0; c<8; c++) for (let d=0; d<8; d++) {
         let cell=board[c][d];
         if (cell!=='0') {
@@ -49,32 +53,69 @@ function init() {
         }
     }
 }
-var lastRow, lastColumn;
+var columnStartWhite, rowStartWhite, columnEndWhite, rowEndWhite, columnStartBlack, rowStartBlack, columnEndBlack, rowEndBlack;
+function inputMove(isWhite) {
+    whatToShow=(isWhite?WHITE:BLACK);
+    WHITE_BUTTON.setAttribute("disabled", "disabled");
+    BLACK_BUTTON.setAttribute("disabled", "disabled");
+    if (isWhite) WHITE_BUTTON.innerText="Making white's move...";
+    else BLACK_BUTTON.innerText="Making black's move...";
+}
+function resetCellColours() {
+     for (let lightCell of document.getElementsByClassName("light")) lightCell.style.background="burlywood";
+     for (let darkCell of document.getElementsByClassName("dark")) darkCell.style.background="saddlebrown";
+}
 function selectCell(cell) {
     let classes=cell.classList;
-    let row= +classes[2].charAt(1)-1, column= +classes[3].charAt(1)-1;
+    let row= +classes[2].charAt(1), column= +classes[3].charAt(1);
     let piece=board[row][column];
-    if (cell.style.background==="yellow") {
-        move(lastColumn, lastRow, column-lastColumn, row-lastRow, true);//TODO change
-        for (let div of document.getElementsByClassName("cell")) {
-            div.style.background=div.classList.contains("light")?"burlywood":"saddlebrown";
-        }
-    } else {
-        lastRow=row; lastColumn=column;
-        for (let div of document.getElementsByClassName("cell")) {
-            div.style.background=div.classList.contains("light")?"burlywood":"saddlebrown";
-        }
-        for (let moveOption of movementOptions(piece, row, column)) {
-            for (let element of document.getElementsByClassName("r"+(moveOption[0]+1))) {
-                if (element.classList.contains("c"+(moveOption[1]+1))) {
-                    element.style.background="yellow";
-                    lastRow=row;
-                    lastColumn=column;
-                }
-            }
+    if (cell.style.background==="green") cell.style.background=classes.contains("light")?"burlywood":"saddlebrown";
+    else if (cell.style.background==="yellow") {
+        if (whatToShow===WHITE) {
+            columnEndWhite=column;
+            rowEndWhite=row;
+            resetCellColours();
+            WHITE_BUTTON.innerText="White's move made!";
+            if (BLACK_BUTTON.innerHTML==="Black's move") BLACK_BUTTON.removeAttribute("disabled");
+            else moveCheck();
+        } else if (whatToShow===BLACK) {
+            columnEndBlack=column;
+            rowEndBlack=row;
+            resetCellColours();
+            BLACK_BUTTON.innerText="Black's move made!";
+            if (WHITE_BUTTON.innerHTML==="White's move") WHITE_BUTTON.removeAttribute("disabled");
+            else moveCheck();
+        } else console.log("That wasn't supposed to happen :skull:");
+        whatToShow=EMPTY;
+    }
+    else {
+        switch(whatToShow) {
+            case EMPTY:
+                resetCellColours();
+                cell.style.background="green";
+                break;
+            case WHITE:
+                if (piece===piece.toUpperCase()) {
+                    for (let moveOption of movementOptions(piece, row, column)) {
+                        document.getElementsByClassName("r"+moveOption[0]+" c"+moveOption[1])[0].style.background="yellow";
+                    }
+                    columnStartWhite=column;
+                    rowStartWhite=row;
+                    cell.style.background="green";
+                } else alert("This is a piece of your opponent's! ");
+                break;
+            case BLACK:
+                if (piece===piece.toLowerCase()) {
+                    for (let moveOption of movementOptions(piece, row, column)) {
+                        document.getElementsByClassName("r"+moveOption[0]+" c"+moveOption[1])[0].style.background="yellow";
+                    }
+                    columnStartBlack=column;
+                    rowStartBlack=row;
+                    cell.style.background="green";
+                } else alert("This is a piece of your opponent's! ");
+                break;
         }
     }
-    cell.style.background="green";
 }
 function movementOptions(piece, row, column) {
     let cellsToMoveTo=[];
@@ -115,8 +156,7 @@ function movementOptions(piece, row, column) {
             let moveOptions=[[row+1, column+2], [row+2, column+1], [row-1, column+2], [row-2, column+1], 
                              [row-1, column-2], [row-2, column-1], [row+1, column-2], [row+2, column-1]];
             for (let moveOption of moveOptions) {
-                if (moveOption[0]<0||moveOption[0]>7||moveOption[1]<0||moveOption[1]>7) continue;
-                else cellsToMoveTo.push([moveOption[0], moveOption[1]]);
+                if (!(moveOption[0]<0||moveOption[0]>7||moveOption[1]<0||moveOption[1]>7)) cellsToMoveTo.push(moveOption);
             }
             break;
         case 'B': case 'b'://Bishops
@@ -169,10 +209,14 @@ function interaction(piece, target) {
     else if ((piece===piece.toUpperCase()&&target===target.toLowerCase())||(piece===piece.toUpperCase()&&target===target.toLowerCase())) return CAPTURE;
     else return BLOCKED;
 }
-function move(columnStartWhite, rowStartWhite, columnDistanceWhite, rowDistanceWhite, legalWhite, 
-              columnStartBlack, rowStartBlack, columnDistanceBlack, rowDistanceBlack, legalBlack) {
+function moveCheck() {
+    //gotta implement them all!
+    move(true, true);
+}
+function move(legalWhite, legalBlack) {
     let imageWhite=objects[rowStartWhite][columnStartWhite], imageBlack=objects[rowStartBlack][columnStartBlack];
-    let leftWhite=columnStartWhite*45, topWhite=(7-rowStartWhite)*45, leftBlack=columnStartBlack*45, topBlack=rowStartBlack*45;
+    let leftWhite=columnStartWhite*45, topWhite=(7-rowStartWhite)*45, columnDistanceWhite=columnEndWhite-columnStartWhite, rowDistanceWhite=rowEndWhite-rowStartWhite, 
+        leftBlack=columnStartBlack*45, topBlack=(7-rowStartBlack)*45, columnDistanceBlack=columnEndBlack-columnStartBlack, rowDistanceBlack=rowEndBlack-rowStartBlack;
     let c=0, idC=setInterval(func, 20); 
     function func() {
         leftWhite+=columnDistanceWhite;
@@ -186,32 +230,40 @@ function move(columnStartWhite, rowStartWhite, columnDistanceWhite, rowDistanceW
         if (Math.abs(imageWhite.style.left-imageBlack.style.left)<5 && 
             Math.abs(imageWhite.style.top-imageBlack.style.top)<5 && 
             legalWhite && legalBlack) {
-            let d=1; idD=setInterval(funcTwo, 40);
-            function funcTwo() {
-                imageWhite.style.left+=(d%4>=2?5:-5);
-                imageBlack.style.left+=(d%4>=2?5:-5);
-                if (d>8) clearInterval(idD); else d++;
-            }
             clearInterval(idC);
         }
-        if (c>=45) clearInterval(idC); else c++;
+        if (c>=44) clearInterval(idC); else c++;
     }
     if (legalWhite) {
-        board[rowStartWhite+rowDistanceWhite][columnStartWhite+columnDistanceWhite]=board[rowStartWhite][columnStartWhite];
+        board[rowEndWhite][columnEndWhite]=board[rowStartWhite][columnStartWhite];
         board[rowStartWhite][columnStartWhite]='0';
-        objects[rowStartWhite+rowDistanceWhite][columnStartWhite+columnDistanceWhite]=objects[rowStartWhite][columnStartWhite];
+        objects[rowEndWhite][columnEndWhite]=objects[rowStartWhite][columnStartWhite];
         objects[rowStartWhite][columnStartWhite]=null;
     } else {
         imageWhite.style.left=columnStartWhite*45;
         imageWhite.style.top=rowStartWhite*45;
+        let d=1; idD=setInterval(funcWhite, 40);
+        function funcWhite() {
+            imageWhite.style.left+=(d%4>=2?5:-5);
+            if (d>8) clearInterval(idD); else d++;
+        }
     }
     if (legalBlack) {
-        board[rowStartBlack+rowDistanceBlack][columnStartBlack+columnDistanceBlack]=board[rowStartBlack][columnStartBlack];
+        board[rowEndBlack][columnEndBlack]=board[rowStartBlack][columnStartBlack];
         board[rowStartBlack][columnStartBlack]='0';
-        objects[rowStartBlack+rowDistanceBlack][columnStartBlack+columnDistanceBlack]=objects[rowStartBlack][columnStartBlack];
+        objects[rowEndBlack][columnEndBlack]=objects[rowStartBlack][columnStartBlack];
         objects[rowStartBlack][columnStartBlack]=null;
     } else {
         imageBlack.style.left=columnStartBlack*45;
         imageBlack.style.top=rowStartBlack*45;
+        let d=1; idD=setInterval(funcBlack, 40);
+        function funcBlack() {
+            imageBlack.style.left+=(d%4>=2?5:-5);
+            if (d>8) clearInterval(idD); else d++;
+        }
     }
+    document.getElementById("whiteMoveButton").innerText="White's move";
+    document.getElementById("whiteMoveButton").removeAttribute("disabled");
+    document.getElementById("blackMoveButton").innerText="Black's move";
+    document.getElementById("blackMoveButton").removeAttribute("disabled");
 }
