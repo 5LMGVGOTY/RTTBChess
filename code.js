@@ -211,14 +211,19 @@ function interaction(piece, target) {
 }
 function moveCheck() {
     //gotta implement them all!
-    move(true, true);
+    move(true, false);
+    setTimeout(function() {
+        document.getElementById("whiteMoveButton").innerText="White's move";
+        document.getElementById("whiteMoveButton").removeAttribute("disabled");
+        document.getElementById("blackMoveButton").innerText="Black's move";
+        document.getElementById("blackMoveButton").removeAttribute("disabled");
+    }, 2000);
 }
 function move(legalWhite, legalBlack) {
     let imageWhite=objects[rowStartWhite][columnStartWhite], imageBlack=objects[rowStartBlack][columnStartBlack];
     let leftWhite=columnStartWhite*45, topWhite=(7-rowStartWhite)*45, columnDistanceWhite=columnEndWhite-columnStartWhite, rowDistanceWhite=rowEndWhite-rowStartWhite, 
         leftBlack=columnStartBlack*45, topBlack=(7-rowStartBlack)*45, columnDistanceBlack=columnEndBlack-columnStartBlack, rowDistanceBlack=rowEndBlack-rowStartBlack;
-    let c=0, idC=setInterval(func, 20); 
-    function func() {
+    let c=0, collision=false, idC=setInterval(function() {
         leftWhite+=columnDistanceWhite;
         imageWhite.style.left=leftWhite+"px";
         topWhite-=rowDistanceWhite;
@@ -229,41 +234,30 @@ function move(legalWhite, legalBlack) {
         imageBlack.style.top=topBlack+"px";
         if (Math.abs(imageWhite.style.left-imageBlack.style.left)<5 && 
             Math.abs(imageWhite.style.top-imageBlack.style.top)<5 && 
-            legalWhite && legalBlack) {
+            legalWhite && legalBlack) return true;
+        if (c>=44) {
+            if (!legalWhite) {
+                imageWhite.style.top=(7-rowStartWhite)*45+"px";
+                let d=1; idD=setInterval(function() {
+                    imageWhite.style.left=columnStartWhite*45+(d%4>=2?5:-5)+"px";
+                    if (d>8) {
+                        imageWhite.style.left=columnStartWhite*45+"px";
+                        clearInterval(idD);
+                    } else d++;
+                }, 25);
+            }
+            if (!legalBlack) {
+                imageBlack.style.top=(7-rowStartBlack)*45+"px";
+                let d=1; idD=setInterval(function() {
+                    imageBlack.style.left=columnStartBlack*45+(d%4>=2?5:-5)+"px";
+                    if (d>8) {
+                        imageBlack.style.left=columnStartBlack*45+"px";
+                        clearInterval(idD);
+                    } else d++;
+                }, 25);
+            }
             clearInterval(idC);
-        }
-        if (c>=44) clearInterval(idC); else c++;
-    }
-    if (legalWhite) {
-        board[rowEndWhite][columnEndWhite]=board[rowStartWhite][columnStartWhite];
-        board[rowStartWhite][columnStartWhite]='0';
-        objects[rowEndWhite][columnEndWhite]=objects[rowStartWhite][columnStartWhite];
-        objects[rowStartWhite][columnStartWhite]=null;
-    } else {
-        imageWhite.style.left=columnStartWhite*45;
-        imageWhite.style.top=rowStartWhite*45;
-        let d=1; idD=setInterval(funcWhite, 40);
-        function funcWhite() {
-            imageWhite.style.left+=(d%4>=2?5:-5);
-            if (d>8) clearInterval(idD); else d++;
-        }
-    }
-    if (legalBlack) {
-        board[rowEndBlack][columnEndBlack]=board[rowStartBlack][columnStartBlack];
-        board[rowStartBlack][columnStartBlack]='0';
-        objects[rowEndBlack][columnEndBlack]=objects[rowStartBlack][columnStartBlack];
-        objects[rowStartBlack][columnStartBlack]=null;
-    } else {
-        imageBlack.style.left=columnStartBlack*45;
-        imageBlack.style.top=rowStartBlack*45;
-        let d=1; idD=setInterval(funcBlack, 40);
-        function funcBlack() {
-            imageBlack.style.left+=(d%4>=2?5:-5);
-            if (d>8) clearInterval(idD); else d++;
-        }
-    }
-    document.getElementById("whiteMoveButton").innerText="White's move";
-    document.getElementById("whiteMoveButton").removeAttribute("disabled");
-    document.getElementById("blackMoveButton").innerText="Black's move";
-    document.getElementById("blackMoveButton").removeAttribute("disabled");
+            return false;
+        } else c++;
+    }, 30);
 }
