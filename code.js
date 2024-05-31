@@ -3,7 +3,7 @@ var board=[
     ['P', 'P', 'P', 'P', 'P', 'P', 'P', 'P'], 
     ['0', '0', '0', '0', '0', '0', '0', '0'], 
     ['0', '0', '0', '0', '0', '0', '0', '0'], 
-    ['0', '0', '0', '0', '0', '0', '0', '0'], 
+    ['0', '0', 'b', '0', 'B', '0', '0', '0'], 
     ['0', '0', '0', '0', '0', '0', '0', '0'], 
     ['p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'], 
     ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'], //Row 8, black pieces
@@ -211,13 +211,7 @@ function interaction(piece, target) {
 }
 function moveCheck() {
     //gotta implement them all!
-    move(true, false);
-    setTimeout(function() {
-        document.getElementById("whiteMoveButton").innerText="White's move";
-        document.getElementById("whiteMoveButton").removeAttribute("disabled");
-        document.getElementById("blackMoveButton").innerText="Black's move";
-        document.getElementById("blackMoveButton").removeAttribute("disabled");
-    }, 2000);
+    move(true, true);
 }
 function move(legalWhite, legalBlack) {
     let imageWhite=objects[rowStartWhite][columnStartWhite], imageBlack=objects[rowStartBlack][columnStartBlack];
@@ -232,9 +226,9 @@ function move(legalWhite, legalBlack) {
         imageBlack.style.left=leftBlack+"px";
         topBlack-=rowDistanceBlack;
         imageBlack.style.top=topBlack+"px";
-        if (Math.abs(imageWhite.style.left-imageBlack.style.left)<5 && 
-            Math.abs(imageWhite.style.top-imageBlack.style.top)<5 && 
-            legalWhite && legalBlack) return true;
+        if (Math.abs(leftWhite-leftBlack)<5 && 
+            Math.abs(topWhite-topBlack)<5 && 
+            legalWhite && legalBlack) c=69;
         if (c>=44) {
             if (!legalWhite) {
                 imageWhite.style.top=(7-rowStartWhite)*45+"px";
@@ -257,7 +251,24 @@ function move(legalWhite, legalBlack) {
                 }, 25);
             }
             clearInterval(idC);
-            return false;
+            doDangerousStuffWithTheData(c===69);
         } else c++;
     }, 30);
+}
+function doDangerousStuffWithTheData(collision) {
+    if (collision) {
+        console.log("There was a collision");
+        board[rowStartWhite][columnStartWhite]='0';
+        board[rowStartBlack][columnStartBlack]='0';
+        document.getElementById("board").removeChild(objects[rowStartWhite][columnStartWhite]);
+        document.getElementById("board").removeChild(objects[rowStartBlack][columnStartBlack]);
+        objects[rowStartWhite][columnStartWhite]=null;
+        objects[rowStartBlack][columnStartBlack]=null;
+    } else {
+        
+    }
+    document.getElementById("whiteMoveButton").innerText="White's move";
+    document.getElementById("whiteMoveButton").removeAttribute("disabled");
+    document.getElementById("blackMoveButton").innerText="Black's move";
+    document.getElementById("blackMoveButton").removeAttribute("disabled");
 }
