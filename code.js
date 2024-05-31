@@ -3,7 +3,7 @@ var board=[
     ['P', 'P', 'P', 'P', 'P', 'P', 'P', 'P'], 
     ['0', '0', '0', '0', '0', '0', '0', '0'], 
     ['0', '0', '0', '0', '0', '0', '0', '0'], 
-    ['0', '0', 'b', '0', 'B', '0', '0', '0'], 
+    ['0', '0', '0', '0', '0', '0', '0', '0'], 
     ['0', '0', '0', '0', '0', '0', '0', '0'], 
     ['p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'], 
     ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'], //Row 8, black pieces
@@ -139,7 +139,7 @@ function movementOptions(piece, row, column) {
                 cellsToMoveTo.push([c, column]);
                 if (interaction(piece, board[c][column])===BLOCKED) break;
             }
-            for (let c=row-1; c>=0; c++) {//down
+            for (let c=row-1; c>=0; c--) {//down
                 cellsToMoveTo.push([c, column]);
                 if (interaction(piece, board[c][column])===BLOCKED) break;
             }
@@ -147,7 +147,7 @@ function movementOptions(piece, row, column) {
                 cellsToMoveTo.push([row, c]);
                 if (interaction(piece, board[row][c])===BLOCKED) break;
             }
-            for (let c=column-1; c>=0; c++) {//left
+            for (let c=column-1; c>=0; c--) {//left
                 cellsToMoveTo.push([row, c]);
                 if (interaction(piece, board[row][c])===BLOCKED) break;
             }
@@ -206,14 +206,14 @@ function movementOptions(piece, row, column) {
 }
 function interaction(piece, target) {
     if (target==='0') return EMPTY;
-    else if ((piece===piece.toUpperCase()&&target===target.toLowerCase())||(piece===piece.toUpperCase()&&target===target.toLowerCase())) return CAPTURE;
+    else if ((piece===piece.toUpperCase()&&target===target.toLowerCase())||(piece===piece.toLowerCase()&&target===target.toUpperCase())) return CAPTURE;
     else return BLOCKED;
 }
 function moveCheck() {
     //gotta implement them all!
-    move(true, true);
+    move(true, true, true);
 }
-function move(legalWhite, legalBlack) {
+function move(whitePriority, legalWhite, legalBlack) {
     let imageWhite=objects[rowStartWhite][columnStartWhite], imageBlack=objects[rowStartBlack][columnStartBlack];
     let leftWhite=columnStartWhite*45, topWhite=(7-rowStartWhite)*45, columnDistanceWhite=columnEndWhite-columnStartWhite, rowDistanceWhite=rowEndWhite-rowStartWhite, 
         leftBlack=columnStartBlack*45, topBlack=(7-rowStartBlack)*45, columnDistanceBlack=columnEndBlack-columnStartBlack, rowDistanceBlack=rowEndBlack-rowStartBlack;
@@ -251,11 +251,11 @@ function move(legalWhite, legalBlack) {
                 }, 25);
             }
             clearInterval(idC);
-            doDangerousStuffWithTheData(c===69);
+            doDangerousStuffWithTheData(c===69, whitePriority, legalWhite, legalBlack);
         } else c++;
     }, 30);
 }
-function doDangerousStuffWithTheData(collision) {
+function doDangerousStuffWithTheData(collision, whitePriority, legalWhite, legalBlack) {
     if (collision) {
         console.log("There was a collision");
         board[rowStartWhite][columnStartWhite]='0';
@@ -265,7 +265,25 @@ function doDangerousStuffWithTheData(collision) {
         objects[rowStartWhite][columnStartWhite]=null;
         objects[rowStartBlack][columnStartBlack]=null;
     } else {
-        
+        if (whitePriority) {
+            if (objects[rowEndWhite][columnEndWhite]!==null) document.getElementById("board").removeChild(objects[rowEndWhite][columnEndWhite]);
+            board[rowEndWhite][columnEndWhite]=board[rowStartWhite][columnStartWhite];
+            board[rowStartWhite][columnStartWhite]='0';
+            objects[rowEndWhite][columnEndWhite]=objects[rowStartWhite][columnStartWhite];
+            objects[rowStartWhite][columnStartWhite]=null;
+        }
+        if (objects[rowEndBlack][columnEndBlack]!==null) document.getElementById("board").removeChild(objects[rowEndBlack][columnEndBlack]);
+        board[rowEndBlack][columnEndBlack]=board[rowStartBlack][columnStartBlack];
+        board[rowStartBlack][columnStartBlack]='0';
+        objects[rowEndBlack][columnEndBlack]=objects[rowStartBlack][columnStartBlack];
+        objects[rowStartBlack][columnStartBlack]=null;
+        if (!whitePriority) {
+            if (objects[rowEndWhite][columnEndWhite]!==null) document.getElementById("board").removeChild(objects[rowEndWhite][columnEndWhite]);
+            board[rowEndWhite][columnEndWhite]=board[rowStartWhite][columnStartWhite];
+            board[rowStartWhite][columnStartWhite]='0';
+            objects[rowEndWhite][columnEndWhite]=objects[rowStartWhite][columnStartWhite];
+            objects[rowStartWhite][columnStartWhite]=null;
+        }
     }
     document.getElementById("whiteMoveButton").innerText="White's move";
     document.getElementById("whiteMoveButton").removeAttribute("disabled");
