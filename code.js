@@ -89,9 +89,9 @@ function selectCell(cell) {
         whatToShow=EMPTY;
     }
     else {
+        resetCellColours();
         switch(whatToShow) {
             case EMPTY:
-                resetCellColours();
                 cell.style.background="green";
                 break;
             case WHITE:
