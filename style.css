@@ -1,5 +1,5 @@
-.light { background-color: burlywood; }
-.dark { background-color: saddlebrown; }
+.dark { background-color: brown; }
+.light { background-color: turquoise; }
 h1 { text-align: center; }
 body {
     background-image: linear-gradient(to bottom right, yellow, purple);

@@ -1,12 +1,12 @@
 var board=[
-    ['R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R'], //Row 1, white pieces
+    ['R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R'], //Row 1, light pieces
     ['P', 'P', 'P', 'P', 'P', 'P', 'P', 'P'], 
     ['0', '0', '0', '0', '0', '0', '0', '0'], 
     ['0', '0', '0', '0', '0', '0', '0', '0'], 
     ['0', '0', '0', '0', '0', '0', '0', '0'], 
     ['0', '0', '0', '0', '0', '0', '0', '0'], 
     ['p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'], 
-    ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'], //Row 8, black pieces
+    ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'], //Row 8, dark pieces
 ], objects=[
     [null, null, null, null, null, null, null, null], 
     [null, null, null, null, null, null, null, null], 
@@ -18,27 +18,27 @@ var board=[
     [null, null, null, null, null, null, null, null]
 ];
 const IMAGES=new Map([
-    ['K', "White_king"], 
-    ['k', "Black_king"], 
-    ['Q', "White_queen"], 
-    ['q', "Black_queen"], 
-    ['R', "White_rook"], 
-    ['r', "Black_rook"], 
-    ['N', "White_knight"], 
-    ['n', "Black_knight"], 
-    ['B', "White_bishop"], 
-    ['b', "Black_bishop"], 
-    ['P', "White_pawn"], 
-    ['p', "Black_pawn"]
+    ['K', "Light_king"], 
+    ['k', "Dark_king"], 
+    ['Q', "Light_queen"], 
+    ['q', "Dark_queen"], 
+    ['R', "Light_rook"], 
+    ['r', "Dark_rook"], 
+    ['N', "Light_knight"], 
+    ['n', "Dark_knight"], 
+    ['B', "Light_bishop"], 
+    ['b', "Dark_bishop"], 
+    ['P', "Light_pawn"], 
+    ['p', "Dark_pawn"]
 ]);
-const EMPTY=0, CAPTURE=1, BLOCKED=2, WHITE=1, BLACK=2;
+const EMPTY=0, CAPTURE=1, BLOCKED=2, LIGHT=1, DARK=2;
 var whatToShow=EMPTY;
-const WHITE_BUTTON=document.getElementsByTagName("button")[0], BLACK_BUTTON=document.getElementsByTagName("button")[1];
+const LIGHT_BUTTON=document.getElementsByTagName("button")[0], DARK_BUTTON=document.getElementsByTagName("button")[1];
 function init() {
     console.log("Yay, HTML connects to this external JS file! ");
     for (let cell of document.getElementsByClassName("cell")) cell.addEventListener('click', () => selectCell(cell));
-    WHITE_BUTTON.addEventListener('click', () => inputMove(true));
-    BLACK_BUTTON.addEventListener('click', () => inputMove(false));
+    LIGHT_BUTTON.addEventListener('click', () => inputMove(true));
+    DARK_BUTTON.addEventListener('click', () => inputMove(false));
     for (let c=0; c<8; c++) for (let d=0; d<8; d++) {
         let cell=board[c][d];
         if (cell!=='0') {
@@ -53,17 +53,17 @@ function init() {
         }
     }
 }
-var columnStartWhite, rowStartWhite, columnEndWhite, rowEndWhite, columnStartBlack, rowStartBlack, columnEndBlack, rowEndBlack;
-function inputMove(isWhite) {
-    whatToShow=(isWhite?WHITE:BLACK);
-    WHITE_BUTTON.setAttribute("disabled", "disabled");
-    BLACK_BUTTON.setAttribute("disabled", "disabled");
-    if (isWhite) WHITE_BUTTON.innerText="Making white's move...";
-    else BLACK_BUTTON.innerText="Making black's move...";
+var columnStartLight, rowStartLight, columnEndLight, rowEndLight, columnStartDark, rowStartDark, columnEndDark, rowEndDark;
+function inputMove(isLight) {
+    whatToShow=(isLight?LIGHT:DARK);
+    LIGHT_BUTTON.setAttribute("disabled", "disabled");
+    DARK_BUTTON.setAttribute("disabled", "disabled");
+    if (isLight) LIGHT_BUTTON.innerText="Making light's move...";
+    else DARK_BUTTON.innerText="Making dark's move...";
 }
 function resetCellColours() {
-     for (let lightCell of document.getElementsByClassName("light")) lightCell.style.background="burlywood";
-     for (let darkCell of document.getElementsByClassName("dark")) darkCell.style.background="saddlebrown";
+     for (let lightCell of document.getElementsByClassName("light")) lightCell.style.background="turquoise";
+     for (let darkCell of document.getElementsByClassName("dark")) darkCell.style.background="brown";
 }
 function selectCell(cell) {
     let classes=cell.classList;
@@ -73,19 +73,19 @@ function selectCell(cell) {
     resetCellColours();
     if (cellColour==="yellow") {
         resetCellColours();
-        if (whatToShow===WHITE) {
-            columnEndWhite=column;
-            rowEndWhite=row;
+        if (whatToShow===LIGHT) {
+            columnEndLight=column;
+            rowEndLight=row;
             resetCellColours();
-            WHITE_BUTTON.innerText="White's move made!";
-            if (BLACK_BUTTON.innerHTML==="Black's move") BLACK_BUTTON.removeAttribute("disabled");
+            LIGHT_BUTTON.innerText="Light's move made!";
+            if (DARK_BUTTON.innerHTML==="Dark's move") DARK_BUTTON.removeAttribute("disabled");
             else moveCheck();
-        } else if (whatToShow===BLACK) {
-            columnEndBlack=column;
-            rowEndBlack=row;
+        } else if (whatToShow===DARK) {
+            columnEndDark=column;
+            rowEndDark=row;
             resetCellColours();
-            BLACK_BUTTON.innerText="Black's move made!";
-            if (WHITE_BUTTON.innerHTML==="White's move") WHITE_BUTTON.removeAttribute("disabled");
+            DARK_BUTTON.innerText="Dark's move made!";
+            if (LIGHT_BUTTON.innerHTML==="Light's move") LIGHT_BUTTON.removeAttribute("disabled");
             else moveCheck();
         } else console.log("That wasn't supposed to happen :skull:");
         whatToShow=EMPTY;
@@ -95,23 +95,23 @@ function selectCell(cell) {
             case EMPTY:
                 cell.style.background="green";
                 break;
-            case WHITE:
+            case LIGHT:
                 if (piece===piece.toUpperCase()) {
                     for (let moveOption of movementOptions(piece, row, column)) {
                         document.getElementsByClassName("r"+moveOption[0]+" c"+moveOption[1])[0].style.background="yellow";
                     }
-                    columnStartWhite=column;
-                    rowStartWhite=row;
+                    columnStartLight=column;
+                    rowStartLight=row;
                     cell.style.background="green";
                 } else alert("This is a piece of your opponent's! ");
                 break;
-            case BLACK:
+            case DARK:
                 if (piece===piece.toLowerCase()) {
                     for (let moveOption of movementOptions(piece, row, column)) {
                         document.getElementsByClassName("r"+moveOption[0]+" c"+moveOption[1])[0].style.background="yellow";
                     }
-                    columnStartBlack=column;
-                    rowStartBlack=row;
+                    columnStartDark=column;
+                    rowStartDark=row;
                     cell.style.background="green";
                 } else alert("This is a piece of your opponent's! ");
                 break;
@@ -122,6 +122,7 @@ function movementOptions(piece, row, column) {
     let cellsToMoveTo=[];
     switch(piece) {
         case 'K': case 'k'://Kings
+            //add check & castling movement rules
             if (column<7&&row>0) cellsToMoveTo.push([row-1, column+1]);
             if (column<7) cellsToMoveTo.push([row, column+1]);
             if (column<7&&row<7) cellsToMoveTo.push([row+1, column+1]);
@@ -214,80 +215,80 @@ function moveCheck() {
     //gotta implement them all!
     move(true, true, true);
 }
-function move(whitePriority, legalWhite, legalBlack) {
-    let imageWhite=objects[rowStartWhite][columnStartWhite], imageBlack=objects[rowStartBlack][columnStartBlack];
-    let leftWhite=columnStartWhite*45, topWhite=(7-rowStartWhite)*45, columnDistanceWhite=columnEndWhite-columnStartWhite, rowDistanceWhite=rowEndWhite-rowStartWhite, 
-        leftBlack=columnStartBlack*45, topBlack=(7-rowStartBlack)*45, columnDistanceBlack=columnEndBlack-columnStartBlack, rowDistanceBlack=rowEndBlack-rowStartBlack;
+function move(lightPriority, legalLight, legalDark) {
+    let imageLight=objects[rowStartLight][columnStartLight], imageDark=objects[rowStartDark][columnStartDark];
+    let leftLight=columnStartLight*45, topLight=(7-rowStartLight)*45, columnDistanceLight=columnEndLight-columnStartLight, rowDistanceLight=rowEndLight-rowStartLight, 
+        leftDark=columnStartDark*45, topDark=(7-rowStartDark)*45, columnDistanceDark=columnEndDark-columnStartDark, rowDistanceDark=rowEndDark-rowStartDark;
     let c=0, collision=false, idC=setInterval(function() {
-        leftWhite+=columnDistanceWhite;
-        imageWhite.style.left=leftWhite+"px";
-        topWhite-=rowDistanceWhite;
-        imageWhite.style.top=topWhite+"px";
-        leftBlack+=columnDistanceBlack;
-        imageBlack.style.left=leftBlack+"px";
-        topBlack-=rowDistanceBlack;
-        imageBlack.style.top=topBlack+"px";
-        if (Math.abs(leftWhite-leftBlack)<5 && 
-            Math.abs(topWhite-topBlack)<5 && 
-            legalWhite && legalBlack) c=69;
+        leftLight+=columnDistanceLight;
+        imageLight.style.left=leftLight+"px";
+        topLight-=rowDistanceLight;
+        imageLight.style.top=topLight+"px";
+        leftDark+=columnDistanceDark;
+        imageDark.style.left=leftDark+"px";
+        topDark-=rowDistanceDark;
+        imageDark.style.top=topDark+"px";
+        if (Math.abs(leftLight-leftDark)<5 && 
+            Math.abs(topLight-topDark)<5 && 
+            legalLight && legalDark) c=69;
         if (c>=44) {
-            if (!legalWhite) {
-                imageWhite.style.top=(7-rowStartWhite)*45+"px";
+            if (!legalLight) {
+                imageLight.style.top=(7-rowStartLight)*45+"px";
                 let d=1; idD=setInterval(function() {
-                    imageWhite.style.left=columnStartWhite*45+(d%4>=2?5:-5)+"px";
+                    imageLight.style.left=columnStartLight*45+(d%4>=2?5:-5)+"px";
                     if (d>8) {
-                        imageWhite.style.left=columnStartWhite*45+"px";
+                        imageLight.style.left=columnStartLight*45+"px";
                         clearInterval(idD);
                     } else d++;
                 }, 25);
             }
-            if (!legalBlack) {
-                imageBlack.style.top=(7-rowStartBlack)*45+"px";
+            if (!legalDark) {
+                imageDark.style.top=(7-rowStartDark)*45+"px";
                 let d=1; idD=setInterval(function() {
-                    imageBlack.style.left=columnStartBlack*45+(d%4>=2?5:-5)+"px";
+                    imageDark.style.left=columnStartDark*45+(d%4>=2?5:-5)+"px";
                     if (d>8) {
-                        imageBlack.style.left=columnStartBlack*45+"px";
+                        imageDark.style.left=columnStartDark*45+"px";
                         clearInterval(idD);
                     } else d++;
                 }, 25);
             }
             clearInterval(idC);
-            doDangerousStuffWithTheData(c===69, whitePriority, legalWhite, legalBlack);
+            doDangerousStuffWithTheData(c===69, lightPriority, legalLight, legalDark);
         } else c++;
     }, 30);
 }
-function doDangerousStuffWithTheData(collision, whitePriority, legalWhite, legalBlack) {
+function doDangerousStuffWithTheData(collision, lightPriority, legalLight, legalDark) {
     if (collision) {
         console.log("There was a collision");
-        board[rowStartWhite][columnStartWhite]='0';
-        board[rowStartBlack][columnStartBlack]='0';
-        document.getElementById("board").removeChild(objects[rowStartWhite][columnStartWhite]);
-        document.getElementById("board").removeChild(objects[rowStartBlack][columnStartBlack]);
-        objects[rowStartWhite][columnStartWhite]=null;
-        objects[rowStartBlack][columnStartBlack]=null;
+        board[rowStartLight][columnStartLight]='0';
+        board[rowStartDark][columnStartDark]='0';
+        document.getElementById("board").removeChild(objects[rowStartLight][columnStartLight]);
+        document.getElementById("board").removeChild(objects[rowStartDark][columnStartDark]);
+        objects[rowStartLight][columnStartLight]=null;
+        objects[rowStartDark][columnStartDark]=null;
     } else {
-        if (whitePriority) {
-            if (objects[rowEndWhite][columnEndWhite]!==null) document.getElementById("board").removeChild(objects[rowEndWhite][columnEndWhite]);
-            board[rowEndWhite][columnEndWhite]=board[rowStartWhite][columnStartWhite];
-            board[rowStartWhite][columnStartWhite]='0';
-            objects[rowEndWhite][columnEndWhite]=objects[rowStartWhite][columnStartWhite];
-            objects[rowStartWhite][columnStartWhite]=null;
+        if (lightPriority) {
+            if (objects[rowEndLight][columnEndLight]!==null) document.getElementById("board").removeChild(objects[rowEndLight][columnEndLight]);
+            board[rowEndLight][columnEndLight]=board[rowStartLight][columnStartLight];
+            board[rowStartLight][columnStartLight]='0';
+            objects[rowEndLight][columnEndLight]=objects[rowStartLight][columnStartLight];
+            objects[rowStartLight][columnStartLight]=null;
         }
-        if (objects[rowEndBlack][columnEndBlack]!==null) document.getElementById("board").removeChild(objects[rowEndBlack][columnEndBlack]);
-        board[rowEndBlack][columnEndBlack]=board[rowStartBlack][columnStartBlack];
-        board[rowStartBlack][columnStartBlack]='0';
-        objects[rowEndBlack][columnEndBlack]=objects[rowStartBlack][columnStartBlack];
-        objects[rowStartBlack][columnStartBlack]=null;
-        if (!whitePriority) {
-            if (objects[rowEndWhite][columnEndWhite]!==null) document.getElementById("board").removeChild(objects[rowEndWhite][columnEndWhite]);
-            board[rowEndWhite][columnEndWhite]=board[rowStartWhite][columnStartWhite];
-            board[rowStartWhite][columnStartWhite]='0';
-            objects[rowEndWhite][columnEndWhite]=objects[rowStartWhite][columnStartWhite];
-            objects[rowStartWhite][columnStartWhite]=null;
+        if (objects[rowEndDark][columnEndDark]!==null) document.getElementById("board").removeChild(objects[rowEndDark][columnEndDark]);
+        board[rowEndDark][columnEndDark]=board[rowStartDark][columnStartDark];
+        board[rowStartDark][columnStartDark]='0';
+        objects[rowEndDark][columnEndDark]=objects[rowStartDark][columnStartDark];
+        objects[rowStartDark][columnStartDark]=null;
+        if (!lightPriority) {
+            if (objects[rowEndLight][columnEndLight]!==null) document.getElementById("board").removeChild(objects[rowEndLight][columnEndLight]);
+            board[rowEndLight][columnEndLight]=board[rowStartLight][columnStartLight];
+            board[rowStartLight][columnStartLight]='0';
+            objects[rowEndLight][columnEndLight]=objects[rowStartLight][columnStartLight];
+            objects[rowStartLight][columnStartLight]=null;
         }
     }
-    document.getElementById("whiteMoveButton").innerText="White's move";
-    document.getElementById("whiteMoveButton").removeAttribute("disabled");
-    document.getElementById("blackMoveButton").innerText="Black's move";
-    document.getElementById("blackMoveButton").removeAttribute("disabled");
+    document.getElementById("lightMoveButton").innerText="Light's move";
+    document.getElementById("lightMoveButton").removeAttribute("disabled");
+    document.getElementById("darkMoveButton").innerText="Dark's move";
+    document.getElementById("darkMoveButton").removeAttribute("disabled");
 }
