@@ -69,8 +69,10 @@ function selectCell(cell) {
     let classes=cell.classList;
     let row= +classes[2].charAt(1), column= +classes[3].charAt(1);
     let piece=board[row][column];
-    if (cell.style.background==="green") cell.style.background=classes.contains("light")?"burlywood":"saddlebrown";
-    else if (cell.style.background==="yellow") {
+    let cellColour=cell.style.background;
+    resetCellColours();
+    if (cellColour==="yellow") {
+        resetCellColours();
         if (whatToShow===WHITE) {
             columnEndWhite=column;
             rowEndWhite=row;
@@ -88,8 +90,7 @@ function selectCell(cell) {
         } else console.log("That wasn't supposed to happen :skull:");
         whatToShow=EMPTY;
     }
-    else {
-        resetCellColours();
+    else if (cellColour!=="green") {
         switch(whatToShow) {
             case EMPTY:
                 cell.style.background="green";
