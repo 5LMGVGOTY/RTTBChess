@@ -19,13 +19,16 @@ body {
 }
 #rules {
     display: inline-block;
-    background-color: beige;
+    background-color: rgba(245, 245, 220, 0.5);
     border: solid;
     border-color: aliceblue;
+    padding: 0 25px;
 }
 .cell {
     position: relative;
     overflow: hidden;
+    animation-duration: 1.5s;
+    animation-iteration-count: infinite;
 }
 .r7 { grid-row: 1; }
 .r6 { grid-row: 2; }
@@ -54,4 +57,13 @@ img {
     z-index: 1;
     pointer-events: none;
 }
-button { margin: 0 auto; }
+#buttonDiv { text-align: center; }
+@keyframes cellAnimYellow {
+    50% {background-color: yellow;}
+}
+@keyframes cellAnimRed {
+    50% {background-color: red;}
+}
+@keyframes cellAnimGreen {
+    50% {background-color: green;}
+}
