@@ -99,22 +99,26 @@
         </div>
         <div id="buttonDiv">
             <button id="lightMoveButton">Light's move</button>
+            <button type="button" id="resolveMovesButton" disabled>Resolve moves</button>
             <button id="darkMoveButton">Dark's move</button>
         </div>
         <div id="rules">
         <h2>Rules</h2>
             <ul>
                 <li>Movement rules of standart chess apply. </li>
-                <li>Kings may not move into check, but <b>may stay in check if they have a way out of it</b>. </li>
-                <li>Players move at the same time. If your move <u>would be illegal after your opponent's move</u>, it is <b>not played</b>. </li>
-                <li>Should two pieces land on the same <u>empty</u> square, they <b>both</b> are removed <b>except for kings</b>. </li>
-                <li>Should two pieces land on the same <u>occupied</u> space, the piece of the <b>colour of the 
-                    occupant</b> lands and stays there alone. <b>Both other pieces are removed</b>. </li>
+                <li>Players move at the same time. You can try to move over an enemy piece or pretake one of yours, 
+                    but <b>if your move ends up being illegal, it is not played</b>. </li>
+                <li>Kings may not move into check, but <b>may stay in check</b>. </li>
+                <li>Should both moved pieces land on the same <u>occupied space</u>, captures are resolved in order, 
+                    <b>the piece of the colour of the occupant capturing last</b>. </li>
+                <li>Should both moved pieces land on the same <u>empty square</u> or occupy the same square at any same time during their movement, 
+                    <b>they both are removed except for kings</b>. </li>
                 <li>A move capturing a piece in one's home ranks (1 and 2 for White, 7 and 8 for Black) <b>has priority</b>, as to prevent rampages</li>
-                <li>Your opponent wins if <b>your</b> king gets captured but not theirs (capture)
-                    <u>or</u> if you have <b>no way of escaping check</b> on the next turn (checkmate). </li>
+                <li>Your opponent wins if <b>your king gets captured but not theirs</b> (capture)
+                    <u>or</u> if you have <b>no possible moves and your king is in check</b>. </li>
                 <li>The game ends in a draw under standart chess circumstances <i>and</i> when both kings are captured or checkmated 
-                    <b>on the same turn</b>. Lack of mating material is now only the case when <b>only one bishop or knight remains</b>. </li>
+                    <b>on the same turn</b> (capture has priotity over checkmate). </li>
+                <li>Lack of mating material is now only the case when <b>only one bishop or knight remains</b>. </li>
             </ul>
         </div>
     </body>

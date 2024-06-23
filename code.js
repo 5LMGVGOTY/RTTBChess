@@ -32,9 +32,8 @@ const IMAGES=new Map([
     ['p', "Dark_pawn"]
 ]);
 var keypresses=["", "", "", "", "", "", "", "", "", ""];//do not think about this too much
-const EMPTY=0, CAPTURE=1, BLOCKED=2, LIGHT=1, DARK=2;
-var whatToShow=EMPTY, shortCastleLight=true, longCastleLight=true, shortCastleDark=true, longCastleDark=true;
-const LIGHT_BUTTON=document.getElementsByTagName("button")[0], DARK_BUTTON=document.getElementsByTagName("button")[1];
+const EMPTY=0, CAPTURE=1, BLOCKED=2, LIGHT=0, DRAW=1, DARK=2, BUTTONS=document.getElementsByTagName("button");
+var whatToShow=DRAW, castles=[true, true, true, true], moveLight=[0, 0, 0, 0], moveDark=[0, 0, 0, 0], checkLight=false, checkDark=false;
 function init() {
     document.onkeydown=function(event) {//do not think about this too much
         keypresses.push(event.key);
@@ -47,8 +46,9 @@ function init() {
         }
     };
     for (let cell of document.getElementsByClassName("cell")) cell.addEventListener('click', () => selectCell(cell));
-    LIGHT_BUTTON.addEventListener('click', () => inputMove(true));
-    DARK_BUTTON.addEventListener('click', () => inputMove(false));
+    BUTTONS[LIGHT].addEventListener('click', () => inputMove(true));
+    BUTTONS[DRAW].addEventListener('click', () => moveCheck());
+    BUTTONS[DARK].addEventListener('click', () => inputMove(false));
     for (let c=0; c<8; c++) for (let d=0; d<8; d++) {
         let cell=board[c][d];
         if (cell!=='0') {
@@ -63,13 +63,12 @@ function init() {
         }
     }
 }
-var columnStartLight, rowStartLight, columnEndLight, rowEndLight, columnStartDark, rowStartDark, columnEndDark, rowEndDark;
 function inputMove(isLight) {//What happens when you press a button
     whatToShow=(isLight?LIGHT:DARK);
-    LIGHT_BUTTON.setAttribute("disabled", "disabled");
-    DARK_BUTTON.setAttribute("disabled", "disabled");
-    if (isLight) LIGHT_BUTTON.innerText="Making light's move...";
-    else DARK_BUTTON.innerText="Making dark's move...";
+    BUTTONS[LIGHT].setAttribute("disabled", "disabled");
+    BUTTONS[DARK].setAttribute("disabled", "disabled");
+    if (isLight) BUTTONS[LIGHT].innerText="Making light's move...";
+    else BUTTONS[DARK].innerText="Making dark's move...";
 }
 function resetCellAnims() {
      for (let cell of document.getElementsByClassName("cell")) cell.style.animationName="none";
@@ -83,84 +82,115 @@ function selectCell(cell) {//What happens when you click on a cell
     if (cellAnim==="cellAnimYellow"||cellAnim==="cellAnimRed") {
         resetCellAnims();
         if (whatToShow===LIGHT) {
-            columnEndLight=column;
-            rowEndLight=row;
+            moveLight[2]=column;
+            moveLight[3]=row;
             resetCellAnims();
-            LIGHT_BUTTON.innerText="Light's move made!";
-            if (DARK_BUTTON.innerHTML==="Dark's move") DARK_BUTTON.removeAttribute("disabled");
-            else moveCheck();
+            BUTTONS[LIGHT].innerText="Light's move made!";
+            if (BUTTONS[DARK].innerHTML==="Dark's move") BUTTONS[DARK].removeAttribute("disabled");
+            else BUTTONS[DRAW].removeAttribute("disabled");
         } else if (whatToShow===DARK) {
-            columnEndDark=column;
-            rowEndDark=row;
+            moveDark[2]=column;
+            moveDark[3]=row;
             resetCellAnims();
-            DARK_BUTTON.innerText="Dark's move made!";
-            if (LIGHT_BUTTON.innerHTML==="Light's move") LIGHT_BUTTON.removeAttribute("disabled");
-            else moveCheck();
+            BUTTONS[DARK].innerText="Dark's move made!";
+            if (BUTTONS[LIGHT].innerHTML==="Light's move") BUTTONS[LIGHT].removeAttribute("disabled");
+            else BUTTONS[DRAW].removeAttribute("disabled");
         } else console.warn("That wasn't supposed to happen :skull:");
-        whatToShow=EMPTY;
+        whatToShow=DRAW;
     }
-    else if (cellAnim!=="cellAnimGreen") {
+    else if (cellAnim==="none") {
         switch(whatToShow) {
-            case EMPTY:
+            case DRAW:
                 cell.style.animationName="cellAnimGreen";
                 break;
             case LIGHT:
                 if (piece===piece.toUpperCase()) {
-                    for (let moveOption of movementOptions(piece, row, column)) {
+                    for (let moveOption of movementOptions(piece, row, column, false)) {
                         document.getElementsByClassName("r"+moveOption[0]+" c"+moveOption[1])[0].style.animationName=board[moveOption[0]][moveOption[1]]==='0'?"cellAnimYellow":"cellAnimRed";
                     }
-                    columnStartLight=column;
-                    rowStartLight=row;
+                    moveLight[0]=column;
+                    moveLight[1]=row;
                     cell.style.animationName="cellAnimGreen";
                 } else alert("This is a piece of your opponent's! ");
                 break;
             case DARK:
                 if (piece===piece.toLowerCase()) {
-                    for (let moveOption of movementOptions(piece, row, column)) {
-                        document.getElementsByClassName("r"+moveOption[0]+" c"+moveOption[1])[0].style.animationName="cellAnimYellow";
+                    for (let moveOption of movementOptions(piece, row, column, false)) {
+                        document.getElementsByClassName("r"+moveOption[0]+" c"+moveOption[1])[0].style.animationName=board[moveOption[0]][moveOption[1]]==='0'?"cellAnimYellow":"cellAnimRed";
                     }
-                    columnStartDark=column;
-                    rowStartDark=row;
+                    moveDark[0]=column;
+                    moveDark[1]=row;
                     cell.style.animationName="cellAnimGreen";
                 } else alert("This is a piece of your opponent's! ");
                 break;
         }
     }
 }
-function movementOptions(piece, row, column) {//What cells pieces can move to
+function movementOptions(piece, row, column, checkForChecks) {//What cells pieces can move to
     let cellsToMoveTo=[];
     switch(piece) {
-        case 'K': case 'k'://Kings
-            //add check & castling movement rules
-            if (column<7&&row>0) cellsToMoveTo.push([row-1, column+1]);
-            if (column<7) cellsToMoveTo.push([row, column+1]);
-            if (column<7&&row<7) cellsToMoveTo.push([row+1, column+1]);
-            if (row<7) cellsToMoveTo.push([row+1, column]);
-            if (column>0&&row<7) cellsToMoveTo.push([row+1, column-1]);
-            if (column>0) cellsToMoveTo.push([row, column-1]);
-            if (column>0&&row>0) cellsToMoveTo.push([row-1, column-1]);
-            if (row>0) cellsToMoveTo.push([row-1, column]);
+        case 'K'://Kings
+            if (!checkForChecks) {
+                if (row<7) {
+                    if (column<7) cellsToMoveTo.push([row+1, column+1]);
+                    cellsToMoveTo.push([row+1, column]);
+                    if (column>0) cellsToMoveTo.push([row+1, column-1]);
+                }
+                if (row>0) {
+                    if (column<7) cellsToMoveTo.push([row-1, column+1]);
+                    cellsToMoveTo.push([row-1, column]);
+                    if (column>0) cellsToMoveTo.push([row-1, column-1]);
+                }
+                if (column<7) cellsToMoveTo.push([row, column+1]);
+                if (column>0) cellsToMoveTo.push([row, column-1]);
+            }
             break;
-        case 'Q': case 'q'://Queens
-            cellsToMoveTo=cellsToMoveTo.concat(movementOptions(piece===piece.toUpperCase()?'R':'r', row, column), 
-                                               movementOptions(piece===piece.toUpperCase()?'B':'b', row, column));
+        case 'Q'://Light queen
+            cellsToMoveTo=cellsToMoveTo.concat(movementOptions('R', row, column), movementOptions('B', row, column));
+            break;
+        case 'q'://Dark queen
+            cellsToMoveTo=cellsToMoveTo.concat(movementOptions('r', row, column), movementOptions('b', row, column));
             break;
         case 'R': case 'r'://Rooks
+            let piercing=false;
             for (let c=row+1; c<=7; c++) {//up
+                let inter=interaction(piece, board[c][column]);
                 cellsToMoveTo.push([c, column]);
-                if (interaction(piece, board[c][column])===BLOCKED) break;
+                if (inter===BLOCKED) break;
+                else if (inter===CAPTURE) {
+                    if (piercing) break;
+                    else piercing=true;
+                }
             }
+            piercing=false;
             for (let c=row-1; c>=0; c--) {//down
+                let inter=interaction(piece, board[c][column]);
                 cellsToMoveTo.push([c, column]);
-                if (interaction(piece, board[c][column])===BLOCKED) break;
+                if (inter===BLOCKED) break;
+                else if (inter===CAPTURE) {
+                    if (piercing) break;
+                    else piercing=true;
+                }
             }
+            piercing=false;
             for (let c=column+1; c<=7; c++) {//right
+                let inter=interaction(piece, board[row][c]);
                 cellsToMoveTo.push([row, c]);
-                if (interaction(piece, board[row][c])===BLOCKED) break;
+                if (inter===BLOCKED) break;
+                else if (inter===CAPTURE) {
+                    if (piercing) break;
+                    else piercing=true;
+                }
             }
+            piercing=false;
             for (let c=column-1; c>=0; c--) {//left
+                let inter=interaction(piece, board[row][c]);
                 cellsToMoveTo.push([row, c]);
-                if (interaction(piece, board[row][c])===BLOCKED) break;
+                if (inter===BLOCKED) break;
+                else if (inter===CAPTURE) {
+                    if (piercing) break;
+                    else piercing=true;
+                }
             }
             break;
         case 'N': case 'n'://Knights
@@ -171,45 +201,78 @@ function movementOptions(piece, row, column) {//What cells pieces can move to
             }
             break;
         case 'B': case 'b'://Bishops
+            let piercingButForBishops=false;
             for (let c=1; c<8; c++) {//up right
                 if (row+c>7 || column+c>7) break;
                 else {
+                    let inter=interaction(piece, board[row+c][column+c]);
                     cellsToMoveTo.push([row+c, column+c]);
-                    if (interaction(piece, board[row+c][column+c])===BLOCKED) break; 
+                    if (inter===BLOCKED) break;
+                    else if (inter===CAPTURE) {
+                        if (piercingButForBishops) break;
+                        else piercingButForBishops=true;
+                    }
                 }
             }
+            piercingButForBishops=false;
             for (let c=1; c<8; c++) {//down right
                 if (row-c<0 || column+c>7) break;
                 else {
+                    let inter=interaction(piece, board[row-c][column+c]);
                     cellsToMoveTo.push([row-c, column+c]);
-                    if (interaction(piece, board[row-c][column+c])===BLOCKED) break; 
+                    if (inter===BLOCKED) break;
+                    else if (inter===CAPTURE) {
+                        if (piercingButForBishops) break;
+                        else piercingButForBishops=true;
+                    }
                 }
             }
+            piercingButForBishops=false;
             for (let c=1; c<8; c++) {//down left
                 if (row-c<0 || column-c<0) break;
                 else {
+                    let inter=interaction(piece, board[row-c][column-c]);
                     cellsToMoveTo.push([row-c, column-c]);
-                    if (interaction(piece, board[row-c][column-c])===BLOCKED) break; 
+                    if (inter===BLOCKED) break;
+                    else if (inter===CAPTURE) {
+                        if (piercingButForBishops) break;
+                        else piercingButForBishops=true;
+                    }
                 }
             }
+            piercingButForBishops=false;
             for (let c=1; c<8; c++) {//up left
                 if (row+c>7 || column-c<0) break;
                 else {
+                    let inter=interaction(piece, board[row+c][column-c]);
                     cellsToMoveTo.push([row+c, column-c]);
-                    if (interaction(piece, board[row+c][column-c])===BLOCKED) break; 
+                    if (inter===BLOCKED) break;
+                    else if (inter===CAPTURE) {
+                        if (piercingButForBishops) break;
+                        else piercingButForBishops=true;
+                    }
                 }
             }
             break;
-        case 'P': case 'p'://Pawns
-            let operation=((piece===piece.toUpperCase())?1:-1);
-            if (interaction(piece, board[row+operation][column])!=BLOCKED) {
-                cellsToMoveTo.push([row+operation, column]);
-                if (row===((piece===piece.toUpperCase())?1:6)&&interaction(piece, board[operation*2+row][column])!=BLOCKED) {
-                    cellsToMoveTo.push([operation*2+row, column]);
+        case 'P'://Light pawn
+            if (interaction(piece, board[row+1][column])!==BLOCKED && !checkForChecks) {
+                cellsToMoveTo.push([row+1, column]);
+                if (row===1&&interaction(piece, board[row+2][column])!==BLOCKED) {
+                    cellsToMoveTo.push([row+2, column]);
                 }
             }
-            if (column<7) cellsToMoveTo.push([row+operation, column+1]);
-            if (column>0) cellsToMoveTo.push([row+operation, column-1]);
+            if (column<7) cellsToMoveTo.push([row+1, column+1]);
+            if (column>0) cellsToMoveTo.push([row+1, column-1]);
+            break;
+        case 'p'://Dark pawn
+            if (interaction(piece, board[row-1][column])!==BLOCKED && !checkForChecks) {
+                cellsToMoveTo.push([row-1, column]);
+                if (row===6&&interaction(piece, board[row-2][column])!==BLOCKED) {
+                    cellsToMoveTo.push([row-2, column]);
+                }
+            }
+            if (column<7) cellsToMoveTo.push([row-1, column+1]);
+            if (column>0) cellsToMoveTo.push([row-1, column-1]);
             break;
         case 0:default:break;
     }
@@ -221,13 +284,29 @@ function interaction(piece, target) {//What would happen if piece would land on 
     else return BLOCKED;
 }
 function moveCheck() {//Uses advanced logic and processing to determine the outcome of two simultaneous moves
-    //gotta implement them all!
-    move(true, true, true);
+    BUTTONS[DRAW].setAttribute("disabled", "disabled");
+    BUTTONS[DRAW].innerHTML="Resolving moves...";
+    let lightPriority=true, legalLight=true, legalDark=true;
+    if (interaction('K', board[moveLight[3]][moveLight[2]])===BLOCKED) {
+        if (moveDark[3]===moveLight[3] && moveDark[2]===moveLight[2]) lightPriority=false;
+        else legalLight=false;
+    }
+    if (interaction('k', board[moveDark[3]][moveDark[2]])===BLOCKED) {
+        if (moveDark[3]===moveLight[3] && moveDark[2]===moveLight[2]) lightPriority=true;
+        else legalDark=false;
+    }
+    //TODO gotta implement them all!
+    move(lightPriority, legalLight, legalDark);
+    BUTTONS[LIGHT].innerText="Light's move";
+    BUTTONS[LIGHT].removeAttribute("disabled");
+    BUTTONS[DARK].innerText="Dark's move";
+    BUTTONS[DARK].removeAttribute("disabled");
+    BUTTONS[DRAW].innerHTML="Resolve moves";
 }
 function move(lightPriority, legalLight, legalDark) {//Actually moves the pieces AND checks for collisions
-    let imageLight=objects[rowStartLight][columnStartLight], imageDark=objects[rowStartDark][columnStartDark];
-    let leftLight=columnStartLight*45, topLight=(7-rowStartLight)*45, columnDistanceLight=columnEndLight-columnStartLight, rowDistanceLight=rowEndLight-rowStartLight, 
-        leftDark=columnStartDark*45, topDark=(7-rowStartDark)*45, columnDistanceDark=columnEndDark-columnStartDark, rowDistanceDark=rowEndDark-rowStartDark;
+    let imageLight=objects[moveLight[1]][moveLight[0]], imageDark=objects[moveDark[1]][moveDark[0]];
+    let leftLight=moveLight[0]*45, topLight=(7-moveLight[1])*45, columnDistanceLight=moveLight[2]-moveLight[0], rowDistanceLight=moveLight[3]-moveLight[1], 
+        leftDark=moveDark[0]*45, topDark=(7-moveDark[1])*45, columnDistanceDark=moveDark[2]-moveDark[0], rowDistanceDark=moveDark[3]-moveDark[1];
     let c=0, collision=false, idC=setInterval(function() {
         leftLight+=columnDistanceLight;
         imageLight.style.left=leftLight+"px";
@@ -242,21 +321,21 @@ function move(lightPriority, legalLight, legalDark) {//Actually moves the pieces
             legalLight && legalDark) c=69;
         if (c>=44) {
             if (!legalLight) {
-                imageLight.style.top=(7-rowStartLight)*45+"px";
+                imageLight.style.top=(7-moveLight[1])*45+"px";
                 let d=1; idD=setInterval(function() {
-                    imageLight.style.left=columnStartLight*45+(d%4>=2?5:-5)+"px";
+                    imageLight.style.left=moveLight[0]*45+(d%4>=2?5:-5)+"px";
                     if (d>8) {
-                        imageLight.style.left=columnStartLight*45+"px";
+                        imageLight.style.left=moveLight[0]*45+"px";
                         clearInterval(idD);
                     } else d++;
                 }, 25);
             }
             if (!legalDark) {
-                imageDark.style.top=(7-rowStartDark)*45+"px";
+                imageDark.style.top=(7-moveDark[1])*45+"px";
                 let d=1; idD=setInterval(function() {
-                    imageDark.style.left=columnStartDark*45+(d%4>=2?5:-5)+"px";
+                    imageDark.style.left=moveDark[0]*45+(d%4>=2?5:-5)+"px";
                     if (d>8) {
-                        imageDark.style.left=columnStartDark*45+"px";
+                        imageDark.style.left=moveDark[0]*45+"px";
                         clearInterval(idD);
                     } else d++;
                 }, 25);
@@ -268,49 +347,45 @@ function move(lightPriority, legalLight, legalDark) {//Actually moves the pieces
 }
 function doDangerousStuffWithTheData(collision, lightPriority, legalLight, legalDark) {//Changes the board and objects variables according to the moves' outcome
     if (collision) {
-        board[rowStartLight][columnStartLight]='0';
-        board[rowStartDark][columnStartDark]='0';
-        document.getElementById("board").removeChild(objects[rowStartLight][columnStartLight]);
-        document.getElementById("board").removeChild(objects[rowStartDark][columnStartDark]);
-        objects[rowStartLight][columnStartLight]=null;
-        objects[rowStartDark][columnStartDark]=null;
+        board[moveLight[1]][moveLight[0]]='0';
+        board[moveDark[1]][moveDark[0]]='0';
+        document.getElementById("board").removeChild(objects[moveLight[1]][moveLight[0]]);
+        document.getElementById("board").removeChild(objects[moveDark[1]][moveDark[0]]);
+        objects[moveLight[1]][moveLight[0]]=null;
+        objects[moveDark[1]][moveDark[0]]=null;
     } else {
         if (lightPriority && legalLight) {
-            if (interaction('K', board[rowStartLight][columnStartLight])===BLOCKED && rowStartLight===0) {
-                if (columnStartLight===0 || columnStartLight===4) longCastleLight=false;
-                if (columnStartLight===4 || columnStartLight===7) shortCastleLight=false;
+            if (interaction('K', board[moveLight[1]][moveLight[0]])===BLOCKED && moveLight[1]===0) {
+                if (moveLight[0]===0 || moveLight[0]===4) longCastleLight=false;
+                if (moveLight[0]===4 || moveLight[0]===7) shortCastleLight=false;
             }
-            if (objects[rowEndLight][columnEndLight]!==null) document.getElementById("board").removeChild(objects[rowEndLight][columnEndLight]);
-            board[rowEndLight][columnEndLight]=board[rowStartLight][columnStartLight];
-            board[rowStartLight][columnStartLight]='0';
-            objects[rowEndLight][columnEndLight]=objects[rowStartLight][columnStartLight];
-            objects[rowStartLight][columnStartLight]=null;
+            if (objects[moveLight[3]][moveLight[2]]!==null) document.getElementById("board").removeChild(objects[moveLight[3]][moveLight[2]]);
+            board[moveLight[3]][moveLight[2]]=board[moveLight[1]][moveLight[0]];
+            board[moveLight[1]][moveLight[0]]='0';
+            objects[moveLight[3]][moveLight[2]]=objects[moveLight[1]][moveLight[0]];
+            objects[moveLight[1]][moveLight[0]]=null;
         }
         if (legalDark) {
-            if (interaction('K', board[rowStartDark][columnStartDark])===BLOCKED && rowStartDark===0) {
-                if (columnStartDark===0 || columnStartDark===4) longCastleDark=false;
-                if (columnStartDark===4 || columnStartDark===7) shortCastleDark=false;
+            if (interaction('K', board[moveDark[1]][moveDark[0]])===BLOCKED && moveDark[1]===0) {
+                if (moveDark[0]===0 || moveDark[0]===4) longCastleDark=false;
+                if (moveDark[0]===4 || moveDark[0]===7) shortCastleDark=false;
             }
-            if (objects[rowEndDark][columnEndDark]!==null) document.getElementById("board").removeChild(objects[rowEndDark][columnEndDark]);
-            board[rowEndDark][columnEndDark]=board[rowStartDark][columnStartDark];
-            board[rowStartDark][columnStartDark]='0';
-            objects[rowEndDark][columnEndDark]=objects[rowStartDark][columnStartDark];
-            objects[rowStartDark][columnStartDark]=null;
+            if (objects[moveDark[3]][moveDark[2]]!==null) document.getElementById("board").removeChild(objects[moveDark[3]][moveDark[2]]);
+            board[moveDark[3]][moveDark[2]]=board[moveDark[1]][moveDark[0]];
+            board[moveDark[1]][moveDark[0]]='0';
+            objects[moveDark[3]][moveDark[2]]=objects[moveDark[1]][moveDark[0]];
+            objects[moveDark[1]][moveDark[0]]=null;
         }
         if (!lightPriority && legalLight) {
-            if (interaction('K', board[rowStartLight][columnStartLight])===BLOCKED && rowStartLight===0) {
-                if (columnStartLight===0 || columnStartLight===4) longCastleLight=false;
-                if (columnStartLight===4 || columnStartLight===7) shortCastleLight=false;
+            if (interaction('K', board[moveLight[1]][moveLight[0]])===BLOCKED && moveLight[1]===0) {
+                if (moveLight[0]===0 || moveLight[0]===4) longCastleLight=false;
+                if (moveLight[0]===4 || moveLight[0]===7) shortCastleLight=false;
             }
-            if (objects[rowEndLight][columnEndLight]!==null) document.getElementById("board").removeChild(objects[rowEndLight][columnEndLight]);
-            board[rowEndLight][columnEndLight]=board[rowStartLight][columnStartLight];
-            board[rowStartLight][columnStartLight]='0';
-            objects[rowEndLight][columnEndLight]=objects[rowStartLight][columnStartLight];
-            objects[rowStartLight][columnStartLight]=null;
+            if (objects[moveLight[3]][moveLight[2]]!==null) document.getElementById("board").removeChild(objects[moveLight[3]][moveLight[2]]);
+            board[moveLight[3]][moveLight[2]]=board[moveLight[1]][moveLight[0]];
+            board[moveLight[1]][moveLight[0]]='0';
+            objects[moveLight[3]][moveLight[2]]=objects[moveLight[1]][moveLight[0]];
+            objects[moveLight[1]][moveLight[0]]=null;
         }
     }
-    document.getElementById("lightMoveButton").innerText="Light's move";
-    document.getElementById("lightMoveButton").removeAttribute("disabled");
-    document.getElementById("darkMoveButton").innerText="Dark's move";
-    document.getElementById("darkMoveButton").removeAttribute("disabled");
 }

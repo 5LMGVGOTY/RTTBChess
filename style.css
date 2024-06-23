@@ -57,7 +57,10 @@ img {
     z-index: 1;
     pointer-events: none;
 }
-#buttonDiv { text-align: center; }
+#buttonDiv {
+    text-align: center;
+    margin: 10px;
+}
 @keyframes cellAnimYellow {
     50% {background-color: yellow;}
 }
