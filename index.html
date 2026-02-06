@@ -10,6 +10,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>RTTBChess</title>
         <link rel="stylesheet" href="style.css" />
+        <link rel="icon" type="image/x-icon" href="Images/favicon.ico" />
         <script defer type="application/javascript" src="code.js"></script>
         <meta http-equiv="cache-control" content="no-cache" />
         <meta http-equiv="expires" content="0" />
@@ -18,6 +19,12 @@
     <body onload="init()">
         <header><h1>Real-Time Turn-Based Chess</h1></header>
         <noscript>JavaScript disabled :skull:</noscript>
+        <div class="buttonDiv">
+            <button type="button" onclick="importPosition()">Import position</button>
+            <button type="button" onclick="downloadPosition()">Export position</button>
+            <label for="localSave">Save position in local storage</label>
+            <input type="checkbox" name="localSave" onclick="toggleLocalSave()">
+        </div>
         <div id="board">
             <p class="r7 rows">8</p>
             <div class="cell light r7 c0"></div>
@@ -100,10 +107,10 @@
             <p class="cols c6">g</p>
             <p class="cols c7">h</p>
         </div>
-        <div id="buttonDiv">
-            <button type="button" id="lightMoveButton" onclick="inputMove(true)">Light's move</button>
-            <button type="button" id="resolveMovesButton" onclick="moveCheck()" disabled>Resolve moves</button>
-            <button type="button" id="darkMoveButton" onclick="inputMove(false)">Dark's move</button>
+        <div class="buttonDiv">
+            <button type="button" class="moveButton" onclick="inputMove(true)">Light's move</button>
+            <button type="button" class="moveButton" onclick="moveCheck()" disabled>Resolve moves</button>
+            <button type="button" class="moveButton" onclick="inputMove(false)">Dark's move</button>
         </div>
         <div id="rules">
             <h2>Rules</h2>

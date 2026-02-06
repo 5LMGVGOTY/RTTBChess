@@ -58,7 +58,7 @@ img {
     z-index: 1;
     pointer-events: none;
 }
-#buttonDiv {
+.buttonDiv {
     text-align: center;
     margin: 10px;
 }

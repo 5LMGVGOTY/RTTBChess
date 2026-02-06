@@ -41,54 +41,124 @@ const KEYPRESSES = ["", "", "", "", "", "", "", "", "", ""], //do not think abou
     LIGHT = 0,
     DRAW = 1,
     DARK = 2,
-    BUTTONS = document.getElementsByTagName("button"),
-    HTML_BOARD = document.getElementById("board");
+    BUTTONS = document.getElementsByClassName("moveButton"),
+    HTML_BOARD = document.getElementById("board"),
+    LOCAL_SAVE = document.getElementsByName("localSave")[0];
 var whatToShow = DRAW,
-    castles = [true, true, true, true],
-    moveLight = [0, 0, 0, 0],
-    moveDark = [0, 0, 0, 0];
+    castles = { kingsideLight: true, queensideLight: true, queensideDark: true, queensideDark: true },
+    moves = { light: {
+        current: { row: 0, column: 0 },
+        target: { row: 0, column: 0 }
+    }, dark: {
+        current: { row: 0, column: 0 },
+        target: { row: 0, column: 0 }
+    } };
 
 function init() {
     document.onkeydown = function (event) {
         //do not think about this too much
         KEYPRESSES.push(event.key);
         KEYPRESSES.shift();
-        if (
-            KEYPRESSES[0] === "ArrowUp" &&
-            KEYPRESSES[1] === "ArrowUp" &&
-            KEYPRESSES[2] === "ArrowDown" &&
-            KEYPRESSES[3] === "ArrowDown" &&
-            KEYPRESSES[4] === "ArrowLeft" &&
-            KEYPRESSES[5] === "ArrowRight" &&
-            KEYPRESSES[6] === "ArrowLeft" &&
-            KEYPRESSES[7] === "ArrowRight" &&
-            KEYPRESSES[8] === "b" &&
-            KEYPRESSES[9] === "a"
-        ) {
+        if (JSON.stringify(KEYPRESSES) == '["ArrowUp","ArrowUp","ArrowDown","ArrowDown","ArrowLeft","ArrowRight","ArrowLeft","ArrowRight","b","a"]') {
             document.body.style.backgroundImage = "url('Images/SecretBackground.webp')";
             console.log("30 more lives for you! ");
             document.onkeydown = null;
         }
     };
+    const localSave = localStorage.getItem("localSave");
+    if (localSave === "true") {
+        LOCAL_SAVE.setAttribute("checked", "true");
+        const position = localStorage.getItem("position");
+        if (position) {
+            if (!unfen(position)) localStorage.removeItem("position");
+        }
+    } else {
+        localStorage.setItem("localSave", false);
+        localStorage.removeItem("position");
+    }
     for (let cell of document.getElementsByClassName("cell")) cell.addEventListener("click", () => selectCell(cell));
     for (let c = 0; c < 8; c++)
         for (let d = 0; d < 8; d++) {
             let cell = BOARD[c][d];
-            if (cell !== "0") {
-                let type = IMAGES.get(cell);
-                let image = document.createElement("img");
-                image.src = "Images/" + type + ".png";
-                image.setAttribute("alt", type);
-                image.style.top = (7 - c) * 45 + "px";
-                image.style.left = d * 45 + "px";
-                HTML_BOARD.appendChild(image);
-                OBJECTS[c][d] = image;
-            }
+            if (cell === "0") continue;
+            let type = IMAGES.get(cell);
+            let image = document.createElement("img");
+            image.src = "Images/" + type + ".png";
+            image.alt = type;
+            image.style.top = (7 - c) * 45 + "px";
+            image.style.left = d * 45 + "px";
+            HTML_BOARD.appendChild(image);
+            OBJECTS[c][d] = image;
         }
 }
 
-function printBoard() {
-    console.log(BOARD.OBJECTS);
+/** Return the field of an array from the given parameters {row, column}
+ * Default array is BOARD
+ * */
+function getFrom(params, array=BOARD) {
+    return array[params.row][params.column];
+}
+
+/** Set the field of an array from the given parameters {row, column} to the given value
+ * Default array is BOARD, default value is 0
+ * */
+function setFrom(params, value='0', array=BOARD) {
+    array[params.row][params.column] = value;
+}
+
+/** Check whether the two given moves have the same coords */
+function compareMoves(move1, move2) {
+    return move1.row === move2.row && move1.column === move2.column;
+}
+
+function toggleLocalSave() {
+    localStorage.setItem("localSave", LOCAL_SAVE.checked == true);
+    if (LOCAL_SAVE.checked != true) localStorage.removeItem("position");
+}
+
+/** Return the current board and game state as a pseudo-FEN-notation string */
+function fen() {
+    let position = "";
+    for (let row of BOARD) {
+        position += row.join('') + '/';
+    }
+    position = position.slice(0, position.length - 1);
+    return [position].join(' '); // TODO add castling, en passant and half-moves
+}
+
+/** Convert the given pseudo-FEN-notation to a position and game state, returns success */
+function unfen(position) {
+    return false; // TODO
+}
+
+/** Download the current position as a pseudo-FEN-notation text file */
+function downloadPosition() {
+    const link = document.createElement('a');
+    link.download = "RTTBChess_position_" + new Date().toISOString() + ".rttbc";
+    link.href = URL.createObjectURL(new Blob([fen()], { type: "text/plain" }));
+    link.click();
+    URL.revokeObjectURL(link.href);
+}
+
+/** Prompt for a file, then read it and update the position and game state accordingly */
+function importPosition() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.onchange = e => {
+        const reader = new FileReader();
+        reader.onload = readerEvent => {
+            window.alert("Import " + (unfen(readerEvent.target.result) ? "succeeded" : "failed"));
+        }
+        reader.readAsText(e.target.files[0],'UTF-8');
+    }
+    input.click();
+}
+
+/** Print the current board and object matrices from the user's POV */
+function logDebug() {
+    for (let index = 7; index >= 0; index--) {
+        console.debug(BOARD[index], OBJECTS[index]);
+    }
 }
 
 /** What happens when you press a button */
@@ -119,8 +189,7 @@ function selectCell(cell) {
         resetCellAnims();
         BUTTONS[DRAW].innerText = "Resolve moves";
         if (whatToShow === LIGHT) {
-            moveLight[2] = column;
-            moveLight[3] = row;
+            moves.light.target = { row: row, column: column };
             resetCellAnims();
             BUTTONS[LIGHT].innerText = "Light's move made!";
             if (BUTTONS[DARK].innerHTML === "Dark's move") {
@@ -128,8 +197,7 @@ function selectCell(cell) {
                 BUTTONS[DRAW].setAttribute("disabled", "disabled");
             }
         } else if (whatToShow === DARK) {
-            moveDark[2] = column;
-            moveDark[3] = row;
+            moves.dark.target = { row: row, column: column };
             resetCellAnims();
             BUTTONS[DARK].innerText = "Dark's move made!";
             if (BUTTONS[LIGHT].innerHTML === "Light's move") {
@@ -139,38 +207,28 @@ function selectCell(cell) {
         } else console.warn("That wasn't supposed to happen :skull:");
         whatToShow = DRAW;
     } else if (CELL_ANIM === "") {
-        switch (whatToShow) {
-            case DRAW:
-                cell.style.animationName = "cellAnimGreen";
-                break;
-            case LIGHT:
-                if (piece === piece.toUpperCase()) {
-                    for (let moveOption of movementOptions(piece, row, column)) {
-                        document.getElementsByClassName(
-                            "r" + moveOption[0] + " c" + moveOption[1]
-                        )[0].style.animationName =
-                            BOARD[moveOption[0]][moveOption[1]] === "0" ? "cellAnimYellow" : "cellAnimRed";
-                    }
-                    moveLight[0] = column;
-                    moveLight[1] = row;
-                    cell.style.animationName = "cellAnimGreen";
-                } else alert("This is a piece of your opponent's! ");
-                break;
-            case DARK:
-                if (piece === piece.toLowerCase()) {
-                    for (let moveOption of movementOptions(piece, row, column)) {
-                        document.getElementsByClassName(
-                            "r" + moveOption[0] + " c" + moveOption[1]
-                        )[0].style.animationName =
-                            BOARD[moveOption[0]][moveOption[1]] === "0" ? "cellAnimYellow" : "cellAnimRed";
-                    }
-                    moveDark[0] = column;
-                    moveDark[1] = row;
-                    cell.style.animationName = "cellAnimGreen";
-                } else alert("This is a piece of your opponent's! ");
-                break;
+        if (whatToShow === DRAW) {
+            cell.style.animationName = "cellAnimGreen";
+            return;
         }
+        if (piece === (whatToShow === LIGHT ? piece.toUpperCase() : piece.toLowerCase())) {
+            for (let moveOption of movementOptions(piece, row, column)) {
+                document.getElementsByClassName(
+                    "r" + moveOption[0] + " c" + moveOption[1]
+                )[0].style.animationName = cellAnimationIsYellow(piece, moveOption, column) ? "cellAnimYellow" : "cellAnimRed";
+            }
+            moves[whatToShow === LIGHT ? "light" : "dark"].current = { row: row, column: column };
+            cell.style.animationName = "cellAnimGreen";
+        } else alert("This is a piece of your opponent's! ");
+    } // else animation is green, simply cancel
+}
+
+/** Checks if the piece should take or move to the given square */
+function cellAnimationIsYellow(piece, moveOption, column) {
+    if (piece.toUpperCase() === 'P') {
+        return moveOption[1] === column
     }
+    return BOARD[moveOption[0]][moveOption[1]] === '0'
 }
 
 /** What cells pieces can move to */
@@ -323,24 +381,16 @@ function movementOptions(piece, row, column, checkForChecks=false) {
             }
             break;
         case "P": //Light pawn
-            if (interaction(piece, BOARD[row + 1][column]) !== BLOCKED && !checkForChecks) {
-                cellsToMoveTo.push([row + 1, column]);
-                if (row === 1 && interaction(piece, BOARD[row + 2][column]) !== BLOCKED) {
-                    cellsToMoveTo.push([row + 2, column]);
-                }
-            }
-            if (column < 7) cellsToMoveTo.push([row + 1, column + 1]);
-            if (column > 0) cellsToMoveTo.push([row + 1, column - 1]);
-            break;
         case "p": //Dark pawn
-            if (interaction(piece, BOARD[row - 1][column]) !== BLOCKED && !checkForChecks) {
-                cellsToMoveTo.push([row - 1, column]);
-                if (row === 6 && interaction(piece, BOARD[row - 2][column]) !== BLOCKED) {
-                    cellsToMoveTo.push([row - 2, column]);
+            const ROWMOD = piece === 'P' ? 1 : -1;
+            if (interaction(piece, BOARD[row + ROWMOD][column]) !== BLOCKED && !checkForChecks) {
+                cellsToMoveTo.push([row + ROWMOD, column]);
+                if (row === parseInt(-2.5 * ROWMOD + 3.5) && interaction(piece, BOARD[row + (2 * ROWMOD)][column]) !== BLOCKED) {
+                    cellsToMoveTo.push([row + (2 * ROWMOD), column]);
                 }
             }
-            if (column < 7) cellsToMoveTo.push([row - 1, column + 1]);
-            if (column > 0) cellsToMoveTo.push([row - 1, column - 1]);
+            if (column < 7) cellsToMoveTo.push([row + ROWMOD, column + 1]);
+            if (column > 0) cellsToMoveTo.push([row + ROWMOD, column - 1]);
             break;
         case 0:
         default:
@@ -349,7 +399,7 @@ function movementOptions(piece, row, column, checkForChecks=false) {
     return cellsToMoveTo;
 }
 
-/** What would happen if piece would land on target */
+/** What would happen if piece would land on the target square */
 function interaction(piece, target) {
     if (target === "0") return EMPTY;
     else if (
@@ -358,6 +408,17 @@ function interaction(piece, target) {
     )
         return CAPTURE;
     else return BLOCKED;
+}
+
+/** Returns whether the pawn move is valid */
+function simplePawnLogic(piece) {
+    const move = moves[piece === 'P' ? "light" : "dark"];
+    const ACTION = interaction(piece, getFrom(move.target));
+    if (Math.abs(move.current.row - move.target.row) === 2) { // if the pawn moves 2 squares
+        const action2 = interaction(piece, BOARD[move.target.row - ((move.current.row % 6) * 2 - 1)][move.target.column]);
+        return ACTION === EMPTY && action2 === EMPTY;
+    }
+    return ACTION === (Math.abs(move.current.column - move.target.column) === 1 ? CAPTURE : EMPTY);
 }
 
 /** Uses advanced logic and processing to determine the outcome of two simultaneous moves */
@@ -372,114 +433,205 @@ function moveCheck() {
         return;
     }
     BUTTONS[DRAW].innerHTML = "Resolving moves...";
-    let lightPriority = true,
-        legalLight = true,
-        legalDark = true;
-    if (interaction("K", BOARD[moveLight[3]][moveLight[2]]) === BLOCKED) {
-        if (moveDark[3] === moveLight[3] && moveDark[2] === moveLight[2]) lightPriority = false;
+    let priority = DRAW, enPassantFlag = DRAW,
+        legalLight = true, legalDark = true;
+    //TODO implement castling and promotion and check
+    if (getFrom(moves.light.current) === 'P') { // if light moves a pawn
+        const LIGHT_PAWN_TAKES = Math.abs(moves.light.current.column - moves.light.target.column) === 1;
+        if (getFrom(moves.dark.current) === 'p') { // if dark moves a pawn too
+            const DARK_PAWN_TAKES = Math.abs(moves.dark.current.column - moves.dark.target.column) === 1;
+            if (Math.abs(moves.light.current.column - moves.dark.current.column) === 1
+                && Math.abs(moves.light.current.row - moves.dark.current.row) === 2) { // if they are one knight away
+                if (moves.dark.current.row === 6 && moves.dark.target.row === 4 && moves.light.target.column === moves.dark.target.column) { // if light can en passant
+                    const allowed = simplePawnLogic('p');
+                    return move(allowed, allowed, DARK, DARK);
+                }
+                if (moves.light.current.row === 1 && moves.light.target.row === 3 && moves.light.target.column === moves.dark.target.column) { // if dark can en passant
+                    const allowed = simplePawnLogic('P');
+                    return move(allowed, allowed, LIGHT, LIGHT);
+                }
+            }
+            if (compareMoves(moves.light.target, moves.dark.target)) { // if they both target the same square
+                const PIECE = getFrom(moves.light.target), EMPTY = PIECE === '0';
+                if (LIGHT_PAWN_TAKES) {
+                    if (DARK_PAWN_TAKES) { // if dark wants to take too
+                        return move(!EMPTY, !EMPTY, PIECE === PIECE.toUpperCase() ? DARK : LIGHT); // only legal if not empty (order)
+                    } // else check if the space is free
+                    if (EMPTY) return move(true, true, DARK); // if it is, let dark move onto it first
+                    return move(false, false);
+                }
+                if (DARK_PAWN_TAKES) { // if dark takes but not light
+                    if (EMPTY) return move(true, true, LIGHT); // if the space is empty, let light move onto it first
+                    return move(false, false);
+                }
+                return move(EMPTY, EMPTY); // only legal if empty (collision)
+            }
+            if (compareMoves(moves.light.target, moves.dark.current)) { // if light wants to go onto dark
+                if (compareMoves(moves.dark.target, moves.light.current)) { // if both want to go onto each other
+                    return move(LIGHT_PAWN_TAKES, LIGHT_PAWN_TAKES);
+                }
+                const ALLOWED = simplePawnLogic('p');
+                return move(ALLOWED !== LIGHT_PAWN_TAKES, ALLOWED, DARK);
+            }
+            if (compareMoves(moves.light.current, moves.dark.target)) { // if dark wants to go onto light
+                const ALLOWED = simplePawnLogic('P');
+                return move(ALLOWED, ALLOWED !== DARK_PAWN_TAKES, LIGHT);
+            }
+            return move(simplePawnLogic('P'), simplePawnLogic('p'));
+        }
+        if (compareMoves(moves.light.target, moves.dark.target)) { // if both move onto the same space
+            const ACTION = interaction('P', getFrom(moves.light.target));
+            if (LIGHT_PAWN_TAKES) {
+                return move(true, true, ACTION === CAPTURE ? LIGHT : DARK);
+            }
+            return move(ACTION === EMPTY, interaction('p', getFrom(moves.dark.target)) !== BLOCKED, LIGHT);
+        }
+        if (compareMoves(moves.light.target, moves.dark.current)) { // if light's pawn wants to move onto dark
+            if (compareMoves(moves.dark.target, moves.light.current)) { // if both move onto each other
+                return move(LIGHT_PAWN_TAKES, !LIGHT_PAWN_TAKES); // only one takes
+            }
+            const ALLOWED = interaction('p', getFrom(moves.dark.target)) !== BLOCKED;
+            return move(ALLOWED === !LIGHT_PAWN_TAKES, ALLOWED);
+        }
+        if (compareMoves(moves.dark.target, moves.light.current)) { // if dark wants to move onto light's pawn
+            priority = LIGHT;
+        }
+        legalLight = simplePawnLogic('P');
+    }
+    if (getFrom(moves.dark.current) === 'p') { // if only dark moves a pawn
+        const DARK_PAWN_TAKES = Math.abs(moves.dark.current.column - moves.dark.target.column) === 1;
+        if (compareMoves(moves.light.target, moves.dark.target)) { // if both move onto the same space
+            const ACTION = interaction('p', getFrom(moves.dark.target));
+            if (DARK_PAWN_TAKES) {
+                return move(true, true, ACTION === CAPTURE ? DARK : LIGHT);
+            }
+            return move(interaction('P', getFrom(moves.light.target)) !== BLOCKED, ACTION === EMPTY, DARK);
+        }
+        if (compareMoves(moves.dark.target, moves.light.current)) { // if dark's pawn wants to move onto light
+            if (compareMoves(moves.light.target, moves.dark.current)) { // if both move onto each other
+                return move(!DARK_PAWN_TAKES, DARK_PAWN_TAKES); // only one takes
+            }
+            const ALLOWED = interaction('P', getFrom(moves.light.target)) !== BLOCKED;
+            return move(ALLOWED, ALLOWED === !DARK_PAWN_TAKES);
+        }
+        if (compareMoves(moves.dark.target, moves.light.current)) { // if light wants to move onto dark's pawn
+            priority = DARK;
+        }
+        legalDark = simplePawnLogic('p');
+    }
+    if (interaction(getFrom(moves.light.current), getFrom(moves.light.target)) === BLOCKED) {
+        if (compareMoves(moves.light.target, moves.dark.target)) priority = DARK;
         else legalLight = false;
     }
-    if (interaction("k", BOARD[moveDark[3]][moveDark[2]]) === BLOCKED) {
-        if (moveDark[3] === moveLight[3] && moveDark[2] === moveLight[2]) lightPriority = true;
+    if (interaction(getFrom(moves.dark.current), getFrom(moves.dark.target)) === BLOCKED) {
+        if (compareMoves(moves.light.target, moves.dark.target)) priority = LIGHT;
         else legalDark = false;
     }
-    //TODO implement castling and check checks plus promotion
-    move(lightPriority, legalLight, legalDark);
+    move(legalLight, legalDark, priority);
+}
+
+/** Actually move the pieces
+ * @param  {Boolean} legalLight Whether light's move is legal
+ * @param  {Boolean} legalLight Whether dark's move is legal
+ * @param  {Ternary} priority Whether a move must happen before another (default DRAW)
+ * @param  {Ternary} enPassantFlag Whether an en passant is occuring (default DRAW)
+ */
+function move(legalLight=true, legalDark=true, priority=DRAW, enPassantFlag=DRAW) {
+    let imageLight = getFrom(moves.light.current, OBJECTS), imageDark = getFrom(moves.dark.current, OBJECTS);
+    let leftLight = moves.light.current.column * 45, topLight = (7 - moves.light.current.row) * 45,
+        columnDistanceLight = moves.light.target.column - moves.light.current.column,
+        rowDistanceLight = moves.light.target.row - moves.light.current.row,
+        leftDark = moves.dark.current.column * 45, topDark = (7 - moves.dark.current.row) * 45,
+        columnDistanceDark = moves.dark.target.column - moves.dark.current.column,
+        rowDistanceDark = moves.dark.target.row - moves.dark.current.row;
+    let c = 0;
+    let idC = setInterval(function () {
+        leftLight += columnDistanceLight / 2;
+        imageLight.style.left = leftLight + "px";
+        topLight -= rowDistanceLight / 2;
+        imageLight.style.top = topLight + "px";
+        leftDark += columnDistanceDark / 2;
+        imageDark.style.left = leftDark + "px";
+        topDark -= rowDistanceDark / 2;
+        imageDark.style.top = topDark + "px";
+        if (c >= 89) { // Movement animation is finished, play illegal animation if needed
+            if (!legalLight) {
+                imageLight.style.top = (7 - moves.light.current.row) * 45 + "px";
+                let d = 1;
+                const idL = setInterval(function () {
+                    imageLight.style.left = moves.light.current.column * 45 + (d % 4 >= 2 ? 5 : -5) + "px";
+                    if (d > 8) {
+                        imageLight.style.left = moves.light.current.column * 45 + "px";
+                        clearInterval(idL);
+                    } else d++;
+                }, 25);
+            }
+            if (!legalDark) {
+                imageDark.style.top = (7 - moves.dark.current.row) * 45 + "px";
+                let d = 1;
+                const idD = setInterval(function () {
+                    imageDark.style.left = moves.dark.current.column * 45 + (d % 4 >= 2 ? 5 : -5) + "px";
+                    if (d > 8) {
+                        imageDark.style.left = moves.dark.current.column * 45 + "px";
+                        clearInterval(idD);
+                    } else d++;
+                }, 25);
+            }
+            clearInterval(idC);
+            postMove(legalLight, legalDark, priority, enPassantFlag);
+        } else c++;
+    }, 15);
+}
+
+/** Change the BOARD and OBJECTS variables according to the moves' outcome */
+function postMove(legalLight, legalDark, priority, enPassantFlag) {
+    if (priority === DRAW && legalLight && legalDark && (compareMoves(moves.light.target, moves.dark.target)
+        || (compareMoves(moves.light.target, moves.dark.current) && compareMoves(moves.dark.target, moves.light.current)))) { // Remove both pieces
+        setFrom(moves.light.current);
+        setFrom(moves.dark.current);
+        HTML_BOARD.removeChild(getFrom(moves.light.current, OBJECTS));
+        HTML_BOARD.removeChild(getFrom(moves.dark.current, OBJECTS));
+        setFrom(moves.light.current, null, OBJECTS);
+        setFrom(moves.dark.current, null, OBJECTS);
+        return revertButtons();
+    }
+    // change coords if en passant is occuring
+    if (enPassantFlag === DARK) moves.dark.target.row += 1;
+    else if (enPassantFlag === LIGHT) moves.light.target.row -= 1;
+    // remove img tags if necessary and change the game arrays
+    if (priority === LIGHT && legalLight) {
+        if (getFrom(moves.light.target, OBJECTS) !== null) HTML_BOARD.removeChild(getFrom(moves.light.target, OBJECTS));
+        setFrom(moves.light.target, getFrom(moves.light.current));
+        setFrom(moves.light.current);
+        setFrom(moves.light.target, getFrom(moves.light.current, OBJECTS), OBJECTS);
+        setFrom(moves.light.current, null, OBJECTS);
+    }
+    if (legalDark) {
+        if (getFrom(moves.dark.target, OBJECTS) !== null) HTML_BOARD.removeChild(getFrom(moves.dark.target, OBJECTS));
+        setFrom(moves.dark.target, getFrom(moves.dark.current));
+        setFrom(moves.dark.current);
+        setFrom(moves.dark.target, getFrom(moves.dark.current, OBJECTS), OBJECTS);
+        setFrom(moves.dark.current, null, OBJECTS);
+    }
+    if (priority !== LIGHT && legalLight) {
+        if (getFrom(moves.light.target, OBJECTS) !== null) HTML_BOARD.removeChild(getFrom(moves.light.target, OBJECTS));
+        setFrom(moves.light.target, getFrom(moves.light.current));
+        setFrom(moves.light.current);
+        setFrom(moves.light.target, getFrom(moves.light.current, OBJECTS), OBJECTS);
+        setFrom(moves.light.current, null, OBJECTS);
+    }
+    // Save the position according to the parameter
+    if (localStorage.getItem("localSave") === "true") {
+        localStorage.setItem("position", fen());
+    }
+    revertButtons();
+}
+
+/** Ready the buttons' state and text for the next move */
+function revertButtons() {
     BUTTONS[LIGHT].innerText = "Light's move";
     BUTTONS[LIGHT].removeAttribute("disabled");
     BUTTONS[DARK].innerText = "Dark's move";
     BUTTONS[DARK].removeAttribute("disabled");
     BUTTONS[DRAW].innerHTML = "Resolve moves";
-}
-
-/** Actually moves the pieces AND checks for collisions */
-function move(lightPriority, legalLight, legalDark) {
-    let imageLight = OBJECTS[moveLight[1]][moveLight[0]],
-        imageDark = OBJECTS[moveDark[1]][moveDark[0]];
-    let leftLight = moveLight[0] * 45,
-        topLight = (7 - moveLight[1]) * 45,
-        columnDistanceLight = moveLight[2] - moveLight[0],
-        rowDistanceLight = moveLight[3] - moveLight[1],
-        leftDark = moveDark[0] * 45,
-        topDark = (7 - moveDark[1]) * 45,
-        columnDistanceDark = moveDark[2] - moveDark[0],
-        rowDistanceDark = moveDark[3] - moveDark[1];
-    let c = 0,
-        collision = false,
-        idC = setInterval(function () {
-            leftLight += columnDistanceLight/2;
-            imageLight.style.left = leftLight + "px";
-            topLight -= rowDistanceLight/2;
-            imageLight.style.top = topLight + "px";
-            leftDark += columnDistanceDark/2;
-            imageDark.style.left = leftDark + "px";
-            topDark -= rowDistanceDark/2;
-            imageDark.style.top = topDark + "px";
-            if (Math.abs(leftLight - leftDark) < 5 && Math.abs(topLight - topDark) < 5 && legalLight && legalDark)
-                c = 974;
-            if (c >= 89) { // Movement animation is finished, play illegal animation if needed
-                if (!legalLight) {
-                    imageLight.style.top = (7 - moveLight[1]) * 45 + "px";
-                    let d = 1;
-                    idL = setInterval(function () {
-                        imageLight.style.left = moveLight[0] * 45 + (d % 4 >= 2 ? 5 : -5) + "px";
-                        if (d > 8) {
-                            imageLight.style.left = moveLight[0] * 45 + "px";
-                            clearInterval(idL);
-                        } else d++;
-                    }, 25);
-                }
-                if (!legalDark) {
-                    imageDark.style.top = (7 - moveDark[1]) * 45 + "px";
-                    let d = 1;
-                    idD = setInterval(function () {
-                        imageDark.style.left = moveDark[0] * 45 + (d % 4 >= 2 ? 5 : -5) + "px";
-                        if (d > 8) {
-                            imageDark.style.left = moveDark[0] * 45 + "px";
-                            clearInterval(idD);
-                        } else d++;
-                    }, 25);
-                }
-                clearInterval(idC);
-                doDangerousStuffWithTheData(c === 974, lightPriority, legalLight, legalDark);
-            } else c++;
-        }, 15);
-}
-
-/** Changes the BOARD and OBJECTS variables according to the moves' outcome */
-function doDangerousStuffWithTheData(collision, lightPriority, legalLight, legalDark) {
-    if (collision) { // Remove both OBJECTS
-        BOARD[moveLight[1]][moveLight[0]] = "0";
-        BOARD[moveDark[1]][moveDark[0]] = "0";
-        HTML_BOARD.removeChild(OBJECTS[moveLight[1]][moveLight[0]]);
-        HTML_BOARD.removeChild(OBJECTS[moveDark[1]][moveDark[0]]);
-        OBJECTS[moveLight[1]][moveLight[0]] = null;
-        OBJECTS[moveDark[1]][moveDark[0]] = null;
-        return;
-    }
-    // remove img tags if necessary and change the game arrays
-    if (lightPriority && legalLight) {
-        if (OBJECTS[moveLight[3]][moveLight[2]] !== null)
-            HTML_BOARD.removeChild(OBJECTS[moveLight[3]][moveLight[2]]);
-        BOARD[moveLight[3]][moveLight[2]] = BOARD[moveLight[1]][moveLight[0]];
-        BOARD[moveLight[1]][moveLight[0]] = "0";
-        OBJECTS[moveLight[3]][moveLight[2]] = OBJECTS[moveLight[1]][moveLight[0]];
-        OBJECTS[moveLight[1]][moveLight[0]] = null;
-    }
-    if (legalDark) {
-        if (OBJECTS[moveDark[3]][moveDark[2]] !== null)
-            HTML_BOARD.removeChild(OBJECTS[moveDark[3]][moveDark[2]]);
-        BOARD[moveDark[3]][moveDark[2]] = BOARD[moveDark[1]][moveDark[0]];
-        BOARD[moveDark[1]][moveDark[0]] = "0";
-        OBJECTS[moveDark[3]][moveDark[2]] = OBJECTS[moveDark[1]][moveDark[0]];
-        OBJECTS[moveDark[1]][moveDark[0]] = null;
-    }
-    if (!lightPriority && legalLight) {
-        if (OBJECTS[moveLight[3]][moveLight[2]] !== null)
-            HTML_BOARD.removeChild(OBJECTS[moveLight[3]][moveLight[2]]);
-        BOARD[moveLight[3]][moveLight[2]] = BOARD[moveLight[1]][moveLight[0]];
-        BOARD[moveLight[1]][moveLight[0]] = "0";
-        OBJECTS[moveLight[3]][moveLight[2]] = OBJECTS[moveLight[1]][moveLight[0]];
-        OBJECTS[moveLight[1]][moveLight[0]] = null;
-    }
 }
